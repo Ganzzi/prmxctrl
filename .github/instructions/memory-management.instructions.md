@@ -553,7 +553,6 @@ When you need to [use case description]
 
 ```
 External ID: prmxctrl_dev
-Schema File: docs/ref/apidata.js
 Cache Location: schemas/v7.4-2.json
 Generator Location: generator/
 SDK Location: prmxctrl/

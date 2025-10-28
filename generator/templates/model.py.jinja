@@ -1,0 +1,34 @@
+"""
+Pydantic models for {{ module_name }} API endpoints.
+
+This module contains auto-generated Pydantic v2 models for request and response
+validation in the {{ module_name }} API endpoints.
+"""
+
+{% for import_stmt in imports %}
+{{ import_stmt }}
+{% endfor %}
+
+{% for model in models %}
+class {{ model.name }}({{ model.base_class }}):
+    """
+{% if model.docstring %}
+    {{ model.docstring }}
+{% else %}
+    Auto-generated model for {{ module_name }} API.
+{% endif %}
+    """
+{% for field in model.fields %}
+    {{ field.name }}: {{ field.type_annotation }} = Field(
+{% for key, value in field.field_kwargs.items() %}
+        {{ key }}={{ value|repr }},
+{% endfor %}
+    )
+{% endfor %}
+
+    class Config:
+        """Pydantic configuration."""
+        extra = "forbid"  # Forbid extra fields
+        validate_assignment = True  # Validate on assignment
+
+{% endfor %}

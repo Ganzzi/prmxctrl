@@ -30,7 +30,7 @@ Parse local `apidata.js` file into structured Python objects ready for code gene
 
 ### Checklist
 - [ ] **1.1** Implement `generator/fetch_schema.py`:
-  - Load local `docs/ref/apidata.js` (primary)
+  - Load remote gitraw url
   - Optional: GitHub fallback for updates
   - Parse JavaScript to extract `const apiSchema = [...]` JSON
   - Validate JSON structure and basic integrity
@@ -246,7 +246,7 @@ Generate main ProxmoxClient class that ties everything together.
 
 - [ ] **5.3** Integrate code generation pipeline:
   - Implement `tools/generate.py` main CLI:
-    - Load local schema from `docs/ref/apidata.js`
+    - Load remote gitraw url
     - Parse schema into structured format
     - Analyze schema for metadata
     - Generate models
