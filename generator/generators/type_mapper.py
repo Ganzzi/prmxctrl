@@ -131,7 +131,7 @@ class TypeMapper:
             python_type = "str"
 
         # Apply format-specific mapping
-        if param_format and param_format in cls.FORMAT_MAPPINGS:
+        if param_format and isinstance(param_format, str) and param_format in cls.FORMAT_MAPPINGS:
             python_type = cls.FORMAT_MAPPINGS[param_format]
 
         # Handle optional types
@@ -149,7 +149,7 @@ class TypeMapper:
         param_format = param_spec.get("format")
 
         # Handle enum values
-        if "enum" in param_spec:
+        if "enum" in param_spec and param_spec["enum"] is not None:
             enum_values = param_spec["enum"]
             if len(enum_values) <= 10:  # Use Literal for small enums
                 from typing import Literal
@@ -162,7 +162,7 @@ class TypeMapper:
                 return "str"
 
         # Handle format-specific types
-        if param_format:
+        if param_format and isinstance(param_format, str):
             if param_format in cls.FORMAT_MAPPINGS:
                 return cls.FORMAT_MAPPINGS[param_format]
             elif param_format == "password":
@@ -210,41 +210,41 @@ class TypeMapper:
         return python_type, field_kwargs
 
     @classmethod
-    def _build_field_kwargs(cls, param_spec: Dict[str, Any], default_value: Any) -> Dict[str, Any]:
+    def _build_field_kwargs(cls, param_spec: Dict[str, Any], default_value: Any) -> Dict[str, str]:
         """Build Pydantic Field kwargs from parameter constraints."""
         field_kwargs = {}
 
         # Description
         if "description" in param_spec:
-            field_kwargs["description"] = param_spec["description"]
+            field_kwargs["description"] = repr(param_spec["description"])
 
         # Default value
         if "default" in param_spec:
-            field_kwargs["default"] = param_spec["default"]
+            field_kwargs["default"] = repr(param_spec["default"])
 
         # Numeric constraints
         if "minimum" in param_spec:
-            field_kwargs["ge"] = param_spec["minimum"]
+            field_kwargs["ge"] = str(param_spec["minimum"])
         if "maximum" in param_spec:
-            field_kwargs["le"] = param_spec["maximum"]
+            field_kwargs["le"] = str(param_spec["maximum"])
         if "exclusiveMinimum" in param_spec:
-            field_kwargs["gt"] = param_spec["exclusiveMinimum"]
+            field_kwargs["gt"] = str(param_spec["exclusiveMinimum"])
         if "exclusiveMaximum" in param_spec:
-            field_kwargs["lt"] = param_spec["exclusiveMaximum"]
+            field_kwargs["lt"] = str(param_spec["exclusiveMaximum"])
 
         # String constraints
         if "minLength" in param_spec:
-            field_kwargs["min_length"] = param_spec["minLength"]
+            field_kwargs["min_length"] = str(param_spec["minLength"])
         if "maxLength" in param_spec:
-            field_kwargs["max_length"] = param_spec["maxLength"]
+            field_kwargs["max_length"] = str(param_spec["maxLength"])
 
         # Pattern validation
         if "pattern" in param_spec:
-            field_kwargs["pattern"] = param_spec["pattern"]
+            field_kwargs["pattern"] = repr(param_spec["pattern"])
 
         # Enum validation (for large enums)
-        if "enum" in param_spec and len(param_spec["enum"]) > 10:
-            field_kwargs["enum"] = param_spec["enum"]
+        if "enum" in param_spec and param_spec["enum"] is not None and len(param_spec["enum"]) > 10:
+            field_kwargs["enum"] = repr(param_spec["enum"])
 
         return field_kwargs
 

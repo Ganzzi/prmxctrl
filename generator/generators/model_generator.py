@@ -5,10 +5,12 @@ This module generates Pydantic v2 models from parsed schema endpoints,
 creating type-safe request and response models.
 """
 
-from typing import Dict, List, Any, Optional, Set
+from typing import Dict, List, Any, Optional, Set, Union
 from dataclasses import dataclass
 from collections import defaultdict
 import re
+from pathlib import Path
+import jinja2
 
 from ..parse_schema import Endpoint, Method, Parameter
 from .type_mapper import TypeMapper
@@ -20,7 +22,7 @@ class ModelField:
 
     name: str
     type_annotation: str
-    field_kwargs: Dict[str, Any]
+    field_kwargs: Dict[str, str]
     description: Optional[str] = None
 
 
@@ -104,6 +106,76 @@ class ModelGenerator:
 
         return model_files
 
+    def write_models(self, model_files: List[ModelFile], output_dir: Path):
+        """
+        Write generated model files to disk.
+
+        Args:
+            model_files: List of ModelFile objects to write
+            output_dir: Base output directory (e.g., prmxctrl/models)
+        """
+        # Set up Jinja2 environment
+        template_dir = Path(__file__).parent.parent / "templates"
+        env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(template_dir),
+            trim_blocks=True,
+            lstrip_blocks=True,
+        )
+        template = env.get_template("model.py.jinja")
+
+        # Ensure output directory exists
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Collect all model names for __init__.py
+        all_models = []
+
+        # Write each model file
+        for model_file in model_files:
+            # Render template
+            content = template.render(
+                module_name=model_file.filename.replace(".py", ""),
+                imports=model_file.imports,
+                models=model_file.models,
+            )
+
+            # Write file
+            output_path = output_dir / model_file.filename
+            output_path.write_text(content)
+
+        # Generate __init__.py
+        self._write_init_file(output_dir, model_files)
+
+    def _write_init_file(self, output_dir: Path, model_files: List[ModelFile]):
+        """Generate models/__init__.py with all exports."""
+        init_content = '''"""
+Generated Pydantic models for Proxmox VE API.
+
+This module contains all auto-generated Pydantic v2 models for request and response
+validation across all API endpoints.
+"""
+
+'''
+
+        all_models = []
+
+        # Add imports for all models grouped by file
+        for model_file in model_files:
+            module_name = model_file.filename.replace(".py", "")
+            model_names = [model.name for model in model_file.models]
+            if model_names:
+                init_content += f"from .{module_name} import {', '.join(model_names)}\n"
+                all_models.extend(model_names)
+
+        # Add __all__ export
+        init_content += "\n__all__ = [\n"
+        for model_name in sorted(all_models):
+            init_content += f'    "{model_name}",\n'
+        init_content += "]\n"
+
+        # Write __init__.py
+        init_path = output_dir / "__init__.py"
+        init_path.write_text(init_content)
+
     def _generate_request_model(
         self, endpoint: Endpoint, method_name: str, method: Method
     ) -> Optional[PydanticModel]:
@@ -119,8 +191,18 @@ class ModelGenerator:
 
         for param in method.parameters:
             # Map parameter type
+            param_spec = {
+                "type": param.type,
+                "format": param.format,
+                "minimum": param.minimum,
+                "maximum": param.maximum,
+                "maxLength": param.max_length,
+                "pattern": param.pattern,
+                "enum": param.enum,
+                "properties": param.properties,
+            }
             type_annotation, field_kwargs = self.type_mapper.map_parameter_type(
-                param.__dict__, param.name
+                param_spec, param.name
             )
 
             # Track types used for imports
@@ -167,23 +249,21 @@ class ModelGenerator:
         elif method.returns.type == "array":
             # Check if items are specified
             if hasattr(method.returns, "items") and method.returns.items:
-                item_type, _ = self.type_mapper.map_parameter_type(
-                    method.returns.items.__dict__, "item"
-                )
+                item_type, _ = self.type_mapper.map_parameter_type(method.returns.items, "item")
                 type_annotation = f"List[{item_type}]"
             else:
                 type_annotation = "List[Any]"
         else:
             # Primitive type
             type_annotation, _ = self.type_mapper.map_parameter_type(
-                method.returns.__dict__, "response"
+                {"type": method.returns.type}, "response"
             )
 
         # Create a simple response model with a single 'data' field
         field = ModelField(
             name="data",
             type_annotation=type_annotation,
-            field_kwargs={"description": f"Response data for {method_name.upper()}"},
+            field_kwargs={"description": repr(f"Response data for {method_name.upper()}")},
         )
 
         model = PydanticModel(

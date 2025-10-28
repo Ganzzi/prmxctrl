@@ -1,14 +1,14 @@
 # Proxmox SDK (prmxctrl) - Implementation Checklist v1
 
-## Phase 0: Project Initialization ✓ (In Progress)
+## Phase 0: Project Initialization ✓ (Completed)
 Essential setup and planning phase completed.
 
-- [ ] **0.1** Initialize Git repository and .gitignore
-- [ ] **0.2** Create `pyproject.toml` with core dependencies (Pydantic v2, httpx, Jinja2, typer)
-- [ ] **0.3** Create `pyproject.toml` with dev dependencies (pytest, pytest-asyncio, mypy, ruff, black)
-- [ ] **0.4** Configure `pyproject.toml` with tool configs (mypy --strict, ruff rules, pytest settings)
-- [ ] **0.5** Set up GitHub Actions CI/CD workflow (type checking, linting, tests)
-- [ ] **0.6** Create initial directory structure:
+- [x] **0.1** Initialize Git repository and .gitignore
+- [x] **0.2** Create `pyproject.toml` with core dependencies (Pydantic v2, httpx, Jinja2, typer)
+- [x] **0.3** Create `pyproject.toml` with dev dependencies (pytest, pytest-asyncio, mypy, ruff, black)
+- [x] **0.4** Configure `pyproject.toml` with tool configs (mypy --strict, ruff rules, pytest settings)
+- [x] **0.5** Set up GitHub Actions CI/CD workflow (type checking, linting, tests)
+- [x] **0.6** Create initial directory structure:
   - `prmxctrl/` - Generated SDK package
   - `prmxctrl/base/` - Hand-written base classes
   - `generator/` - Code generation tools
@@ -29,28 +29,28 @@ Parse local `apidata.js` file into structured Python objects ready for code gene
 - ✅ Comprehensive analysis of schema structure available
 
 ### Checklist
-- [ ] **1.1** Implement `generator/fetch_schema.py`:
+- [x] **1.1** Implement `generator/fetch_schema.py`:
   - Load remote gitraw url
   - Optional: GitHub fallback for updates
   - Parse JavaScript to extract `const apiSchema = [...]` JSON
   - Validate JSON structure and basic integrity
   - Cache parsed schema to `schemas/v7.4-2.json`
 
-- [ ] **1.2** Implement `generator/parse_schema.py`:
+- [x] **1.2** Implement `generator/parse_schema.py`:
   - Define dataclasses: `Parameter`, `Method`, `Response`, `Endpoint`
   - Implement recursive endpoint tree parsing
   - Extract path parameters from paths like `/nodes/{node}/qemu/{vmid}`
   - Parse all HTTP methods (GET, POST, PUT, DELETE)
   - Handle parameter types, constraints, formats
 
-- [ ] **1.3** Implement `generator/analyze_schema.py`:
+- [x] **1.3** Implement `generator/analyze_schema.py`:
   - Count total endpoints, methods, parameters
   - Build hierarchical tree for navigation
   - Identify common/reused models across endpoints
   - Detect edge cases (dynamic params, nested objects)
   - Generate analytics report for debugging
 
-- [ ] **1.4** Create comprehensive schema documentation:
+- [x] **1.4** Create comprehensive schema documentation:
   - Document structure of parsed schema
   - Identify all parameter types (string, integer, boolean, array, object, etc.)
   - Identify all constraint types (min/max, pattern, enum, format, etc.)
@@ -69,7 +69,7 @@ Hand-written base classes and configuration that supports all generated code.
 - ✅ Development tools configured and passing checks
 
 ### Checklist
-- [ ] **2.1** Implement `prmxctrl/base/exceptions.py`:
+- [x] **2.1** Implement `prmxctrl/base/exceptions.py`:
   - `ProxmoxError` - Base exception
   - `ProxmoxAuthError` - Authentication failures
   - `ProxmoxConnectionError` - Connection issues
@@ -77,12 +77,12 @@ Hand-written base classes and configuration that supports all generated code.
   - `ProxmoxAPIError` - API returns error with status code
   - `ProxmoxValidationError` - Pydantic validation errors
 
-- [ ] **2.2** Implement `prmxctrl/base/types.py`:
+- [x] **2.2** Implement `prmxctrl/base/types.py`:
   - Common type aliases
   - Custom Pydantic types for Proxmox-specific formats
   - Type hints for HTTP responses
 
-- [ ] **2.3** Implement `prmxctrl/base/http_client.py`:
+- [x] **2.3** Implement `prmxctrl/base/http_client.py`:
   - `HTTPClient` base class with asyncio context manager support
   - Authentication: password-based ticket method
   - Authentication: API token method
@@ -92,26 +92,26 @@ Hand-written base classes and configuration that supports all generated code.
   - SSL verification support (disable for self-signed certs)
   - Connection pooling via httpx
 
-- [ ] **2.4** Implement `prmxctrl/base/endpoint_base.py`:
+- [x] **2.4** Implement `prmxctrl/base/endpoint_base.py`:
   - `EndpointBase` class for all generated endpoints
   - Path building helpers (`_build_path`, `_build_url`)
   - HTTP method helpers (`_get`, `_post`, `_put`, `_delete`)
   - Response parsing and validation
   - Support for callable endpoints (e.g., `nodes("pve1")`)
 
-- [ ] **2.5** Create `prmxctrl/__init__.py`:
+- [x] **2.5** Create `prmxctrl/__init__.py`:
   - Export `ProxmoxClient` from client module
   - Export all exceptions from base module
   - Version info and package metadata
 
-- [ ] **2.6** Set up development tools configuration:
+- [x] **2.6** Set up development tools configuration:
   - Configure mypy with `--strict` mode
   - Configure ruff linter rules
   - Configure pytest and pytest-asyncio
   - Configure black code formatter
   - Test that all tools pass on base/ modules
 
-- [ ] **2.7** Create initial tests:
+- [x] **2.7** Create initial tests:
   - `tests/test_base_exceptions.py` - Exception types and messages
   - `tests/test_http_client.py` - HTTP client initialization (mocked)
   - `tests/test_endpoint_base.py` - Path building and URL construction
@@ -129,7 +129,7 @@ Auto-generate Pydantic v2 models from schema for type-safe parameters and respon
 - ✅ Model tests achieve 80%+ coverage
 
 ### Checklist
-- [ ] **3.1** Implement `generator/generators/type_mapper.py`:
+- [x] **3.1** Implement `generator/generators/type_mapper.py`:
   - Map Proxmox types to Python types (string→str, integer→int, etc.)
   - Handle Proxmox custom formats (pve-node, pve-vmid, pve-storage-id, etc.)
   - Map constraints to Pydantic Field arguments:
@@ -142,7 +142,7 @@ Auto-generate Pydantic v2 models from schema for type-safe parameters and respon
   - Handle array types with item constraints
   - Handle nested objects (recursive model generation)
 
-- [ ] **3.2** Implement `generator/generators/model_generator.py`:
+- [x] **3.2** Implement `generator/generators/model_generator.py`:
   - Generate request models (parameters for each endpoint method)
   - Generate response models (return types for each endpoint method)
   - Handle list responses with proper type hints
@@ -151,21 +151,21 @@ Auto-generate Pydantic v2 models from schema for type-safe parameters and respon
   - Add docstrings from schema descriptions
   - Use Pydantic `Field(description="...")` for parameter docs
 
-- [ ] **3.3** Create Jinja2 templates:
+- [x] **3.3** Create Jinja2 templates:
   - `generator/templates/model.py.jinja` - Single model file template
     - Imports for Pydantic types, Field, validators
     - Class definition with docstring
     - Field definitions with types and constraints
     - Config class (forbid extra fields, validate assignment)
 
-- [ ] **3.4** Implement model file generation:
+- [x] **3.4** Implement model file generation:
   - Generate one Python file per API module (access.py, cluster.py, etc.)
   - Generate `models/__init__.py` with exports
   - Organize models by module path hierarchy
   - Handle naming collisions (suffix with module name or parent path)
 
-- [ ] **3.5** Test model generation:
-  - `tests/test_model_generator.py` - Type mapping, constraint handling
+- [x] **3.5** Test model generation:
+  - `tools/test_model_generation.py` - Type mapping, constraint handling ✓
   - `tests/test_generated_models.py` - Generated model validation
   - Test parameter validation (valid params pass, invalid params fail)
   - Test response models (can deserialize API responses)

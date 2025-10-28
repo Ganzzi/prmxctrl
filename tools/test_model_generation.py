@@ -40,9 +40,12 @@ def test_type_mapper():
 
         python_type, field_kwargs = TypeMapper.map_parameter_type(param_spec, "test_param")
 
+        print(f"  Python type: {python_type}")
+        print(f"  Field kwargs: {field_kwargs}")
+
         assert python_type == "Optional[str]"
-        assert field_kwargs["description"] == "Test parameter"
-        assert field_kwargs["default"] == "default_value"
+        assert field_kwargs["description"] == "'Test parameter'"
+        assert field_kwargs["default"] == "'default_value'"
 
         print("✓ Type mapper works")
         return True

@@ -172,7 +172,7 @@ class SchemaParser:
             max_length=prop.get("maxLength"),
             pattern=prop.get("pattern"),
             enum=prop.get("enum"),
-            properties=prop.get("properties") or prop.get("format"),  # Nested properties
+            properties=prop.get("properties"),  # Nested properties
         )
 
     def _parse_response(self, response_info: Dict[str, Any]) -> Response:

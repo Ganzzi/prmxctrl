@@ -178,3 +178,37 @@ class SchemaFetcher:
             json.dump(schema, f, indent=2, ensure_ascii=False)
 
         return schema
+
+    def fetch_and_parse_local(self, local_file: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Load and parse schema from local apidata.js file.
+
+        Args:
+            local_file: Path to local apidata.js file. If None, uses docs/ref/apidata.js.
+
+        Returns:
+            Parsed and validated schema.
+
+        Raises:
+            ValueError: If schema parsing or validation fails.
+            FileNotFoundError: If local file doesn't exist.
+        """
+        if local_file is None:
+            # Default local location
+            project_root = Path(__file__).parent.parent
+            local_file = str(project_root / "docs" / "ref" / "apidata.js")
+
+        if not os.path.exists(local_file):
+            raise FileNotFoundError(f"Local schema file not found: {local_file}")
+
+        # Read local file
+        with open(local_file, "r", encoding="utf-8") as f:
+            js_content = f.read()
+
+        # Extract and parse JSON
+        json_str = self.extract_schema_json(js_content)
+        schema = self.parse_json(json_str)
+
+        # Validate structure
+        self.validate_schema(schema)
+
+        return schema
