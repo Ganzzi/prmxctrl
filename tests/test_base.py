@@ -132,16 +132,20 @@ class TestHTTPClient:
     def test_http_client_init_token_auth(self):
         """Test HTTPClient initialization with token auth."""
         client = HTTPClient(
-            host="https://proxmox:8006", token_name="mytoken", token_value="token123"
+            host="https://proxmox:8006",
+            user="root@pam",
+            token_name="mytoken",
+            token_value="token123",
         )
 
         assert client.host == "https://proxmox:8006"
+        assert client.user == "root@pam"
         assert client.token_name == "mytoken"
         assert client.token_value == "token123"
 
     def test_http_client_invalid_auth(self):
         """Test HTTPClient rejects invalid auth combinations."""
-        with pytest.raises(ValueError, match="Must provide either"):
+        with pytest.raises(TypeError, match="missing 1 required positional argument: 'user'"):
             HTTPClient(host="https://proxmox:8006")
 
         with pytest.raises(ValueError, match="Cannot use both"):
@@ -152,12 +156,6 @@ class TestHTTPClient:
                 token_name="mytoken",
                 token_value="token123",
             )
-
-    def test_get_domain(self):
-        """Test domain extraction from host URL."""
-        client = HTTPClient(host="https://proxmox:8006", token_name="test", token_value="test")
-        domain = client._get_domain()
-        assert domain == "proxmox:8006"
 
 
 class TestEndpointBase:
@@ -221,7 +219,7 @@ if __name__ == "__main__":
 
     # Test imports
     try:
-        from prmxctrl.base import endpoint_base, exceptions, http_client, types
+        from prmxctrl.base import endpoint_base, exceptions, http_client
 
         print("✓ All imports successful")
     except ImportError as e:

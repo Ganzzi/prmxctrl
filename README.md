@@ -25,6 +25,53 @@ A fully type-safe, auto-generated Python SDK for the Proxmox Virtual Environment
 pip install prmxctrl
 ```
 
+### Environment Setup
+
+For security, it's recommended to use environment variables instead of hardcoding credentials. Copy the example file and fill in your credentials:
+
+```bash
+cp .env.example .env
+# Edit .env with your actual credentials
+```
+
+The `.env` file supports both authentication methods:
+
+```bash
+# For password authentication
+PROXMOX_USERNAME=your_username
+PROXMOX_PASSWORD=your_password
+PROXMOX_REALM=pam  # or pve for Proxmox realm
+
+# For API token authentication (recommended)
+PROXMOX_TOKEN_ID=your_token_name
+PROXMOX_TOKEN_SECRET=your_token_uuid
+
+# Required for both methods
+PROXMOX_HOST=https://your-proxmox-server:8006
+PROXMOX_NODE=your_node_name
+PROXMOX_VMID=100
+```
+
+Then load the environment variables in your code:
+
+```python
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Use in client initialization
+client = ProxmoxClient(
+    host=os.getenv("PROXMOX_HOST"),
+    user=f"{os.getenv('PROXMOX_USERNAME')}@{os.getenv('PROXMOX_REALM')}",
+    password=os.getenv("PROXMOX_PASSWORD"),
+    # OR for token auth:
+    # token_name=os.getenv("PROXMOX_TOKEN_ID"),
+    # token_value=os.getenv("PROXMOX_TOKEN_SECRET"),
+)
+```
+
 ### Basic Usage
 
 ```python
@@ -32,6 +79,7 @@ import asyncio
 from prmxctrl import ProxmoxClient
 
 async def main():
+    # Method 1: Async context manager (recommended for production)
     async with ProxmoxClient(
         host="your-proxmox-host",
         user="your-username@pve",
@@ -50,20 +98,93 @@ async def main():
         vm_config = await client.nodes("pve1").qemu(100).config.get()
         print(f"VM config: {vm_config}")
 
+    # Method 2: Manual initialization (for better type hints in development)
+    client = ProxmoxClient(
+        host="your-proxmox-host",
+        user="your-username@pve",
+        password="your-password"
+    )
+    try:
+        await client._setup_client()  # Manual setup
+        # Get cluster status
+        status = await client.cluster.status.get()
+        print(f"Cluster status: {status}")
+    finally:
+        await client._cleanup_client()  # Manual cleanup
+
 asyncio.run(main())
 ```
 
-### API Token Authentication
+### Authentication
+
+The SDK supports two authentication methods:
+
+#### Password Authentication (Ticket-based)
 
 ```python
 async with ProxmoxClient(
-    host="your-proxmox-host",
-    token_name="your-token-name",
-    token_secret="your-token-secret"
+    host="https://your-proxmox-host:8006",
+    user="your-username@pve",  # username@realm format
+    password="your-password",
+    verify_ssl=False  # Set to True for production with valid SSL certs
 ) as client:
-    # Use the client...
-    pass
+    # Get cluster status
+    status = await client.cluster.status.get()
+    print(f"Cluster status: {status}")
 ```
+
+#### API Token Authentication (Recommended)
+
+```python
+async with ProxmoxClient(
+    host="https://your-proxmox-host:8006",
+    user="your-username@pve",  # username@realm format (required for token auth)
+    token_name="your-token-name",
+    token_value="your-token-secret",
+    verify_ssl=False  # Set to True for production with valid SSL certs
+) as client:
+    # Get cluster status
+    status = await client.cluster.status.get()
+    print(f"Cluster status: {status}")
+```
+
+**Authentication Notes:**
+- **API Token Authentication is recommended** for production use (more secure, no password storage)
+- **Password Authentication** uses Proxmox's ticket/CSRF token system
+- Both methods require the `user` parameter in `username@realm` format
+- Set `verify_ssl=True` in production environments with valid SSL certificates
+- The SDK automatically handles CSRF tokens and session management
+
+### Client Initialization Methods
+
+The SDK supports two initialization patterns with different trade-offs:
+
+#### Async Context Manager (Recommended)
+```python
+async with ProxmoxClient(...) as client:
+    # Automatic resource cleanup
+    result = await client.version.get()
+```
+- ✅ **Automatic resource management** - HTTP connections are properly cleaned up
+- ✅ **Exception safety** - Resources are cleaned up even if errors occur
+- ✅ **Production ready** - Follows Python best practices
+- ❌ **Type hints may show as `Any`** - Due to context manager return type limitations
+
+#### Manual Initialization (Development)
+```python
+client = ProxmoxClient(...)
+try:
+    await client._setup_client()
+    result = await client.version.get()  # Full type hints available
+finally:
+    await client._cleanup_client()
+```
+- ✅ **Full type hints** - IDE shows complete endpoint types and methods
+- ✅ **Better development experience** - Autocomplete and type checking work perfectly
+- ❌ **Manual resource management** - Must remember to call setup/cleanup
+- ❌ **Error prone** - Easy to forget cleanup, potentially leaking connections
+
+**Recommendation**: Use the async context manager for production code. Use manual initialization during development when you need full type hint support for exploring the API.
 
 ## API Structure
 

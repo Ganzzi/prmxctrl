@@ -44,7 +44,7 @@ class HTTPClient:
     def __init__(
         self,
         host: str,
-        user: Username | None = None,
+        user: Username,
         password: Password | None = None,
         token_name: str | None = None,
         token_value: AuthToken | None = None,
@@ -57,7 +57,7 @@ class HTTPClient:
 
         Args:
             host: Proxmox server URL (e.g., "https://proxmox:8006")
-            user: Username for authentication (required for password auth)
+            user: Username for authentication (required for both password and token auth)
             password: Password for authentication (for password auth)
             token_name: API token name (for token auth)
             token_value: API token value (for token auth)
@@ -88,14 +88,18 @@ class HTTPClient:
 
     def _validate_auth_params(self) -> None:
         """Validate authentication parameters."""
+        # User is required for both authentication methods
+        if not self.user:
+            raise ValueError("User is required for authentication")
+
         # Check password auth
-        has_password_auth = self.user is not None and self.password is not None
+        has_password_auth = self.password is not None
         # Check token auth
         has_token_auth = self.token_name is not None and self.token_value is not None
 
         if not (has_password_auth or has_token_auth):
             raise ValueError(
-                "Must provide either (user + password) or (token_name + token_value) for authentication"
+                "Must provide either password or (token_name + token_value) for authentication"
             )
 
         if has_password_auth and has_token_auth:
@@ -168,9 +172,9 @@ class HTTPClient:
             self._ticket = data["data"]["ticket"]
             self._csrf_token = data["data"].get("CSRFPreventionToken")
 
-            # Set authentication cookie
+            # Set authentication cookie - let httpx handle domain/path matching automatically
             assert self._ticket is not None  # Should be set above
-            self._client.cookies.set("PVEAuthCookie", self._ticket, domain=self._get_domain())
+            self._client.cookies.set("PVEAuthCookie", self._ticket)
 
         except Exception as e:
             if hasattr(e, "response"):
@@ -191,26 +195,20 @@ class HTTPClient:
             raise ProxmoxAuthError("Client not initialized or missing token")
 
         # For token auth, we set the Authorization header
-        # Format: "PVEAPIToken={token_name}@{realm}!{token_name}={token_value}"
-        # But we need to extract realm from user if provided, otherwise assume 'pam'
+        # Format: "PVEAPIToken=USER@REALM!TOKENID=UUID"
+        # We need to extract realm from user if provided, otherwise assume 'pam'
         if self.user:
             # Extract realm from user (format: user@realm)
             if "@" in self.user:
-                realm = self.user.split("@", 1)[1]
+                user_part, realm = self.user.split("@", 1)
             else:
+                user_part = self.user
                 realm = "pam"
         else:
-            realm = "pam"
+            raise ProxmoxAuthError("User must be provided for token authentication")
 
-        auth_header = f"PVEAPIToken={self.token_name}@{realm}!{self.token_name}={self.token_value}"
+        auth_header = f"PVEAPIToken={user_part}@{realm}!{self.token_name}={self.token_value}"
         self._client.headers["Authorization"] = auth_header
-
-    def _get_domain(self) -> str:
-        """Extract domain from host URL for cookie setting."""
-        from urllib.parse import urlparse
-
-        parsed = urlparse(self.host)
-        return parsed.netloc
 
     async def request(
         self,
@@ -269,8 +267,10 @@ class HTTPClient:
                 request_kwargs["content"] = data
 
         # Add CSRF token for non-GET requests if available
-        if method.upper() != "GET" and self._csrf_token:
-            request_kwargs["headers"]["CSRFPreventionToken"] = self._csrf_token
+        # if method.upper() != "GET" and self._csrf_token:
+        if self._csrf_token:
+            # request_kwargs["headers"]["CSRFPreventionToken"] = self._csrf_token
+            self._client.headers["CSRFPreventionToken"] = self._csrf_token
 
         last_exception: Exception | None = None
 
