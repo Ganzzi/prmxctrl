@@ -3,23 +3,13 @@
 All notable changes to prmxctrl will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.2] - 2025-10-29
+## [0.1.1] - 2025-10-29
 
 ### Fixed
 - **Critical Authentication Bug**: Fixed password-based authentication that was returning 401 "no ticket error" on all API calls after successful authentication
 - **Cookie Domain Parameter Issue**: Removed explicit domain parameter from httpx cookie setting that prevented cookies from being sent in subsequent requests
 - **Authentication Flow**: Both password and token authentication methods now work correctly with full API access
-
-### Technical Details
-- **Root Cause**: httpx cookie jar uses strict domain matching when domain parameter is provided, preventing PVEAuthCookie from being included in subsequent requests
-- **Solution**: Removed `domain=self._get_domain()` parameter from `cookies.set()` call, allowing httpx to handle automatic cookie matching
-- **Verification**: Both password and token authentication tested successfully against live Proxmox server
-
-## [0.1.1] - 2025-10-29
-
-### Fixed
 - **Authentication Validation**: Made `user` parameter required for both password and token authentication methods
 - **Type Safety**: Fixed type hints to accurately reflect that `user` parameter is mandatory
 - **Error Handling**: Improved error messages for missing authentication parameters
@@ -28,6 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **HTTPClient**: `user` parameter is now required instead of optional
 - **ProxmoxClient**: `user` parameter is now required instead of optional
 - **Type Annotations**: Updated to use modern `X | None` syntax for optional parameters
+
+### Technical Details
+- **Root Cause**: httpx cookie jar uses strict domain matching when domain parameter is provided, preventing PVEAuthCookie from being included in subsequent requests
+- **Solution**: Removed `domain=self._get_domain()` parameter from `cookies.set()` call, allowing httpx to handle automatic cookie matching
+- **Verification**: Both password and token authentication tested successfully against live Proxmox server
 
 ## [0.1.0] - 2025-10-29
 

@@ -11,7 +11,6 @@ import asyncio
 from prmxctrl import ProxmoxClient
 from prmxctrl.models.nodes import (
     Nodes_Node_Qemu_Vmid_VncproxyPOSTRequest,
-    NodesQemuVncproxyEndpoints,
 )
 
 
