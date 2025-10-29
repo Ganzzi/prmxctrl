@@ -4,9 +4,9 @@ This module handles parsing the raw Proxmox API schema into structured
 Python objects with proper type annotations.
 """
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Literal
 import re
+from dataclasses import dataclass, field
+from typing import Any, Literal
 
 
 @dataclass
@@ -15,16 +15,16 @@ class Parameter:
 
     name: str
     type: str
-    description: Optional[str] = None
+    description: str | None = None
     optional: bool = False
-    default: Optional[Any] = None
-    format: Optional[str] = None
-    minimum: Optional[int] = None
-    maximum: Optional[int] = None
-    max_length: Optional[int] = None
-    pattern: Optional[str] = None
-    enum: Optional[List[Any]] = None
-    properties: Optional[Dict[str, Any]] = None  # For nested objects
+    default: Any | None = None
+    format: str | None = None
+    minimum: int | None = None
+    maximum: int | None = None
+    max_length: int | None = None
+    pattern: str | None = None
+    enum: list[Any] | None = None
+    properties: dict[str, Any] | None = None  # For nested objects
 
 
 @dataclass
@@ -32,9 +32,9 @@ class Response:
     """API response definition."""
 
     type: str
-    description: Optional[str] = None
-    properties: Optional[Dict[str, Any]] = None
-    items: Optional[Dict[str, Any]] = None  # For array responses
+    description: str | None = None
+    properties: dict[str, Any] | None = None
+    items: dict[str, Any] | None = None  # For array responses
 
 
 @dataclass
@@ -43,12 +43,12 @@ class Method:
 
     method: Literal["GET", "POST", "PUT", "DELETE"]
     name: str
-    description: Optional[str] = None
-    parameters: List[Parameter] = field(default_factory=list)
-    returns: Optional[Response] = None
+    description: str | None = None
+    parameters: list[Parameter] = field(default_factory=list)
+    returns: Response | None = None
     protected: bool = False
-    proxyto: Optional[str] = None
-    permissions: Optional[Dict[str, Any]] = None
+    proxyto: str | None = None
+    permissions: dict[str, Any] | None = None
 
 
 @dataclass
@@ -58,11 +58,11 @@ class Endpoint:
     path: str
     text: str  # URL segment name
     leaf: bool  # True if terminal node
-    methods: Dict[str, Method] = field(default_factory=dict)
-    children: List["Endpoint"] = field(default_factory=list)
+    methods: dict[str, Method] = field(default_factory=dict)
+    children: list["Endpoint"] = field(default_factory=list)
 
     # Parsed metadata
-    path_params: List[str] = field(default_factory=list)  # e.g., ['node', 'vmid']
+    path_params: list[str] = field(default_factory=list)  # e.g., ['node', 'vmid']
     python_path: str = ""  # e.g., "nodes.qemu.item"
     class_name: str = ""  # e.g., "NodesQemuItemEndpoints"
 
@@ -70,7 +70,7 @@ class Endpoint:
 class SchemaParser:
     """Parse raw schema into structured format."""
 
-    def parse(self, raw_schema: List[Dict[str, Any]]) -> List[Endpoint]:
+    def parse(self, raw_schema: list[dict[str, Any]]) -> list[Endpoint]:
         """Parse schema recursively into Endpoint objects.
 
         Args:
@@ -81,7 +81,7 @@ class SchemaParser:
         """
         return [self._parse_node(node, parent_path="") for node in raw_schema]
 
-    def _parse_node(self, node: Dict[str, Any], parent_path: str) -> Endpoint:
+    def _parse_node(self, node: dict[str, Any], parent_path: str) -> Endpoint:
         """Parse single schema node into Endpoint object.
 
         Args:
@@ -114,7 +114,7 @@ class SchemaParser:
 
         return endpoint
 
-    def _parse_method(self, method_name: str, method_info: Dict[str, Any]) -> Method:
+    def _parse_method(self, method_name: str, method_info: dict[str, Any]) -> Method:
         """Parse method definition.
 
         Args:
@@ -150,7 +150,7 @@ class SchemaParser:
 
         return method
 
-    def _parse_parameter(self, name: str, prop: Dict[str, Any]) -> Parameter:
+    def _parse_parameter(self, name: str, prop: dict[str, Any]) -> Parameter:
         """Parse parameter definition.
 
         Args:
@@ -175,7 +175,7 @@ class SchemaParser:
             properties=prop.get("properties"),  # Nested properties
         )
 
-    def _parse_response(self, response_info: Dict[str, Any]) -> Response:
+    def _parse_response(self, response_info: dict[str, Any]) -> Response:
         """Parse response definition.
 
         Args:

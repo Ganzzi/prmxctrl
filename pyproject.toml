@@ -9,8 +9,8 @@ description = "Type-safe, auto-generated Python SDK for Proxmox VE API v7.4-2"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
-authors = [{ name = "GitHub Copilot", email = "copilot@github.com" }]
-maintainers = [{ name = "GitHub Copilot", email = "copilot@github.com" }]
+authors = [{ name = "Ganzzi", email = "boinguyen9701@gmail.com" }]
+maintainers = [{ name = "Ganzzi", email = "boinguyen9701@gmail.com" }]
 keywords = ["proxmox", "api", "sdk", "async", "pydantic", "type-safe"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -41,11 +41,11 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/copilot/prmxctrl"
+Homepage = "https://github.com/Ganzzi/prmxctrl"
 Documentation = "https://prmxctrl.readthedocs.io/"
-Repository = "https://github.com/copilot/prmxctrl"
-Issues = "https://github.com/copilot/prmxctrl/issues"
-Changelog = "https://github.com/copilot/prmxctrl/blob/main/CHANGELOG.md"
+Repository = "https://github.com/Ganzzi/prmxctrl"
+Issues = "https://github.com/Ganzzi/prmxctrl/issues"
+Changelog = "https://github.com/Ganzzi/prmxctrl/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 zip-safe = false
@@ -72,11 +72,24 @@ warn_no_return = true
 warn_unreachable = true
 strict_equality = true
 show_error_codes = true
+exclude = [
+    "prmxctrl/endpoints/*/*/*", # Exclude deeply nested directories with {param} names
+    "prmxctrl/endpoints/*/{*}", # Exclude directories with {param} in name
+]
 
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
+
+# Exclude directories with {param} names that are not valid Python packages
+[[tool.mypy.overrides]]
+module = "prmxctrl.endpoints.*.*.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "prmxctrl.endpoints.*.*"
+ignore_errors = true
 
 [tool.ruff]
 line-length = 100

@@ -5,14 +5,14 @@ This module generates Pydantic v2 models from parsed schema endpoints,
 creating type-safe request and response models.
 """
 
-from typing import Dict, List, Any, Optional, Set, Union
-from dataclasses import dataclass
-from collections import defaultdict
 import re
+from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
+
 import jinja2
 
-from ..parse_schema import Endpoint, Method, Parameter
+from ..parse_schema import Endpoint, Method
 from .type_mapper import TypeMapper
 
 
@@ -22,8 +22,8 @@ class ModelField:
 
     name: str
     type_annotation: str
-    field_kwargs: Dict[str, str]
-    description: Optional[str] = None
+    field_kwargs: dict[str, str]
+    description: str | None = None
 
 
 @dataclass
@@ -31,8 +31,8 @@ class PydanticModel:
     """Represents a complete Pydantic model."""
 
     name: str
-    fields: List[ModelField]
-    docstring: Optional[str] = None
+    fields: list[ModelField]
+    docstring: str | None = None
     base_class: str = "BaseModel"
 
 
@@ -41,8 +41,8 @@ class ModelFile:
     """Represents a complete Python file with multiple models."""
 
     filename: str
-    models: List[PydanticModel]
-    imports: List[str]
+    models: list[PydanticModel]
+    imports: list[str]
 
 
 class ModelGenerator:
@@ -55,10 +55,10 @@ class ModelGenerator:
 
     def __init__(self):
         self.type_mapper = TypeMapper()
-        self.generated_models: Dict[str, PydanticModel] = {}
+        self.generated_models: dict[str, PydanticModel] = {}
         self.model_counter = defaultdict(int)
 
-    def generate_models(self, endpoints: List[Endpoint]) -> List[ModelFile]:
+    def generate_models(self, endpoints: list[Endpoint]) -> list[ModelFile]:
         """
         Generate Pydantic models for all endpoints.
 
@@ -69,7 +69,7 @@ class ModelGenerator:
             List of ModelFile objects containing the generated models
         """
         # Collect all models by module
-        models_by_module: Dict[str, List[PydanticModel]] = defaultdict(list)
+        models_by_module: dict[str, list[PydanticModel]] = defaultdict(list)
 
         def process_endpoint(endpoint: Endpoint):
             """Process a single endpoint and its methods."""
@@ -106,7 +106,110 @@ class ModelGenerator:
 
         return model_files
 
-    def write_models(self, model_files: List[ModelFile], output_dir: Path):
+    def _create_model_file(self, module_name: str, models: list[PydanticModel]) -> ModelFile:
+        """Create a ModelFile from a list of models."""
+        # Collect all imports needed
+        imports = self._collect_imports(models)
+
+        # Create filename
+        filename = f"{module_name}.py"
+
+        return ModelFile(filename=filename, models=models, imports=imports)
+
+    def _collect_imports(self, models: list[PydanticModel]) -> list[str]:
+        """Collect all imports needed for the model file."""
+        imports = set()
+        typing_imports = set()
+
+        # Base Pydantic imports
+        imports.add("from pydantic import BaseModel, Field, ConfigDict")
+
+        # Check what typing imports are needed
+        for model in models:
+            for field in model.fields:
+                type_str = field.type_annotation
+                if "Optional[" in type_str:
+                    typing_imports.add("Optional")
+                if "Literal[" in type_str:
+                    typing_imports.add("Literal")
+                # Always include Any since it's commonly used
+                if "Any" in type_str:
+                    typing_imports.add("Any")
+                # If field type contains custom types, add imports
+                if "Proxmox" in type_str:
+                    imports.add("from ..base.types import ProxmoxNode, ProxmoxVMID")
+
+        # Add typing imports if any are needed
+        if typing_imports:
+            imports.add(f"from typing import {', '.join(sorted(typing_imports))}")
+
+        return sorted(imports)
+
+    def generate_models_file_with_names(
+        self, endpoints: list[Endpoint], module_name: str
+    ) -> tuple[str, dict]:
+        """
+        Generate model code for a specific module and return model name mapping.
+
+        Args:
+            endpoints: List of endpoints for this module
+            module_name: Name of the module
+
+        Returns:
+            Tuple of (generated Python code as string, dict mapping base names to actual names)
+        """
+        # Generate models for this module
+        models = []
+        model_name_map = {}
+
+        for endpoint in endpoints:
+            # Generate models for each method
+            for method_name, method in endpoint.methods.items():
+                # Request model
+                if method.parameters:
+                    request_model = self._generate_request_model(endpoint, method_name, method)
+                    if request_model:
+                        models.append(request_model)
+                        # Map base name to actual name
+                        base_name = self._generate_base_model_name(endpoint, method_name, "Request")
+                        model_name_map[base_name] = request_model.name
+
+                # Response model
+                if method.returns and method.returns.type != "null":
+                    response_model = self._generate_response_model(endpoint, method_name, method)
+                    if response_model:
+                        models.append(response_model)
+                        # Map base name to actual name
+                        base_name = self._generate_base_model_name(
+                            endpoint, method_name, "Response"
+                        )
+                        model_name_map[base_name] = response_model.name
+
+        if not models:
+            return f'"""Generated models for {module_name} - no models needed"""\n', {}
+
+        # Collect imports
+        imports = self._collect_imports(models)
+
+        # Set up Jinja2 environment
+        template_dir = Path(__file__).parent.parent / "templates"
+        env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(template_dir),
+            trim_blocks=True,
+            lstrip_blocks=True,
+        )
+        template = env.get_template("model.py.jinja")
+
+        # Render template
+        content = template.render(
+            module_name=module_name,
+            imports=imports,
+            models=models,
+        )
+
+        return content, model_name_map
+
+    def write_models(self, model_files: list[ModelFile], output_dir: Path):
         """
         Write generated model files to disk.
 
@@ -145,7 +248,7 @@ class ModelGenerator:
         # Generate __init__.py
         self._write_init_file(output_dir, model_files)
 
-    def _write_init_file(self, output_dir: Path, model_files: List[ModelFile]):
+    def _write_init_file(self, output_dir: Path, model_files: list[ModelFile]):
         """Generate models/__init__.py with all exports."""
         init_content = '''"""
 Generated Pydantic models for Proxmox VE API.
@@ -178,13 +281,14 @@ validation across all API endpoints.
 
     def _generate_request_model(
         self, endpoint: Endpoint, method_name: str, method: Method
-    ) -> Optional[PydanticModel]:
+    ) -> PydanticModel | None:
         """Generate a request model for method parameters."""
         if not method.parameters:
             return None
 
         # Generate model name
-        model_name = self._generate_model_name(endpoint, method_name, "Request")
+        base_name = self._generate_base_model_name(endpoint, method_name, "Request")
+        model_name = self._ensure_unique_name(base_name)
 
         fields = []
         types_used = set()
@@ -194,6 +298,8 @@ validation across all API endpoints.
             param_spec = {
                 "type": param.type,
                 "format": param.format,
+                "optional": param.optional,
+                "default": param.default,
                 "minimum": param.minimum,
                 "maximum": param.maximum,
                 "maxLength": param.max_length,
@@ -207,6 +313,10 @@ validation across all API endpoints.
 
             # Track types used for imports
             types_used.add(type_annotation)
+
+            # Add description to field_kwargs if present
+            if param.description:
+                field_kwargs["description"] = repr(param.description)
 
             # Create field
             field = ModelField(
@@ -234,25 +344,26 @@ validation across all API endpoints.
 
     def _generate_response_model(
         self, endpoint: Endpoint, method_name: str, method: Method
-    ) -> Optional[PydanticModel]:
+    ) -> PydanticModel | None:
         """Generate a response model for method returns."""
         if not method.returns or method.returns.type == "null":
             return None
 
         # Generate model name
-        model_name = self._generate_model_name(endpoint, method_name, "Response")
+        base_name = self._generate_base_model_name(endpoint, method_name, "Response")
+        model_name = self._ensure_unique_name(base_name)
 
         # For now, create a simple response model
         # TODO: Handle complex response schemas
         if method.returns.type == "object":
-            type_annotation = "Dict[str, Any]"
+            type_annotation = "dict[str, Any]"
         elif method.returns.type == "array":
             # Check if items are specified
             if hasattr(method.returns, "items") and method.returns.items:
                 item_type, _ = self.type_mapper.map_parameter_type(method.returns.items, "item")
-                type_annotation = f"List[{item_type}]"
+                type_annotation = f"list[{item_type}]"
             else:
-                type_annotation = "List[Any]"
+                type_annotation = "list[Any]"
         else:
             # Primitive type
             type_annotation, _ = self.type_mapper.map_parameter_type(
@@ -277,27 +388,31 @@ validation across all API endpoints.
 
         return model
 
-    def _generate_model_name(self, endpoint: Endpoint, method_name: str, suffix: str) -> str:
-        """Generate a unique model name."""
-        # Use endpoint path components to create a meaningful name
-        path_parts = [p for p in endpoint.path.split("/") if p and not p.startswith("{")]
+    def _ensure_unique_name(self, base_name: str) -> str:
+        """Ensure a model name is unique by adding counter if needed."""
+        counter = self.model_counter[base_name]
+        self.model_counter[base_name] += 1
 
-        if path_parts:
-            # Use the last meaningful path component
-            base_name = path_parts[-1].replace("-", "_").title()
-        else:
-            base_name = "Api"
+        if counter > 0:
+            return f"{base_name}{counter}"
+        return base_name
+
+    def _generate_base_model_name(self, endpoint: Endpoint, method_name: str, suffix: str) -> str:
+        """Generate the base model name without counter."""
+        # Use endpoint path to create a unique name
+        path = (
+            endpoint.path.replace("/", "_")
+            .replace("{", "")
+            .replace("}", "")
+            .replace("-", "_")
+            .title()
+        )
+        if path.startswith("_"):
+            path = path[1:]
 
         # Add method and suffix
         method_part = method_name.upper()
-        model_name = f"{base_name}{method_part}{suffix}"
-
-        # Ensure uniqueness
-        counter = self.model_counter[model_name]
-        self.model_counter[model_name] += 1
-
-        if counter > 0:
-            model_name = f"{model_name}{counter}"
+        model_name = f"{path}{method_part}{suffix}"
 
         return model_name
 
@@ -363,22 +478,3 @@ validation across all API endpoints.
             name = f"{name}_"
 
         return name
-
-    def _create_model_file(self, module_name: str, models: List[PydanticModel]) -> ModelFile:
-        """Create a ModelFile from a list of models."""
-        # Collect all types used across models
-        all_types = set()
-        for model in models:
-            for field in model.fields:
-                all_types.add(field.type_annotation)
-
-        # Generate imports
-        imports = self.type_mapper.get_required_imports(list(all_types))
-
-        # Add base Pydantic import
-        imports.insert(0, "from pydantic import BaseModel, Field")
-
-        # Create filename
-        filename = f"{module_name}.py"
-
-        return ModelFile(filename=filename, models=models, imports=imports)

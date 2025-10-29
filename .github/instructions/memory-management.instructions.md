@@ -11,14 +11,14 @@ applyTo: '**'
 
 The prmxctrl (Proxmox SDK) project uses 8 active memories to maintain development context:
 
-1. **Project Overview** (ID: 1) - Purpose, scope, tech stack, key decisions, timeline
-2. **Architecture Design** (ID: 2) - Generator architecture, SDK structure, code generation flow, component patterns
-3. **API Design** (ID: 3) - Endpoint hierarchies, method patterns, Pydantic model structure, naming conventions
-4. **Configuration** (ID: 4) - Environment setup, dev dependencies, Python version, tool configurations (mypy --strict, ruff, pytest)
-5. **Development Status** (ID: 5) - Current phase, completed tasks, progress metrics, blockers, milestones, next steps
-6. **Testing Strategy** (ID: 6) - Test approach, coverage targets (80%+), test status, testing tools, unit vs integration patterns
-7. **Library References** (ID: 7) - Pydantic v2 patterns, httpx patterns, pytest-asyncio patterns, Jinja2 templates, code generation techniques
-8. **Issues and Bugs** (ID: 8) - Detailed issues encountered during development (schema parsing, model generation, endpoint generation, client)
+1. **Project Overview** - Purpose, scope, tech stack, key decisions, timeline
+2. **Architecture Design** - Generator architecture, SDK structure, code generation flow, component patterns
+3. **API Design** - Endpoint hierarchies, method patterns, Pydantic model structure, naming conventions
+4. **Configuration** - Environment setup, dev dependencies, Python version, tool configurations (mypy --strict, ruff, pytest)
+5. **Development Status** - Current phase, completed tasks, progress metrics, blockers, milestones, next steps
+6. **Testing Strategy** - Test approach, coverage targets (80%+), test status, testing tools, unit vs integration patterns
+7. **Library References** - Pydantic v2 patterns, httpx patterns, pytest-asyncio patterns, Jinja2 templates, code generation techniques
+8. **Issues and Bugs** - Detailed issues encountered during development (schema parsing, model generation, endpoint generation, client)
 
 ## When to Access Memories
 
@@ -31,8 +31,8 @@ Parameters: external_id="prmxctrl_dev"
 ```
 
 Then check:
-- **Development Status** (ID: 5) - What phase are we in? What's completed? What are the blockers?
-- **Issues and Bugs** (ID: 8) - Are there known issues that might affect this session?
+- **Development Status** - What phase are we in? What's completed? What are the blockers?
+- **Issues and Bugs** - Are there known issues that might affect this session?
 
 ### 2. **Before Starting Implementation Work**
 Search memories for relevant patterns and prior decisions.
@@ -184,26 +184,26 @@ sections=[
 ## Memory Update Frequency Guide
 
 ### Update Frequently (Daily/Per-Session)
-- **Development Status** (ID: 5) - Every major task or phase change
+- **Development Status** - Every major task or phase change
   - Update `current_phase` when moving between phases
   - Update `completed_tasks` after finishing tasks
   - Update `blockers` when hitting issues
   - Update `progress_metrics` at end of session
 
-- **Issues and Bugs** (ID: 8) - Immediately when issue found
+- **Issues and Bugs** - Immediately when issue found
   - Add new issues with full diagnostic info
   - Update status as investigation progresses
   - Mark as resolved when fixed with solution documented
 
 ### Update Regularly (Weekly/Per-Phase)
-- **Testing Strategy** (ID: 6) - When test approach evolves or coverage changes
-- **Library References** (ID: 7) - When discovering new patterns
-- **Configuration** (ID: 4) - When adding dependencies or changing setup
+- **Testing Strategy** - When test approach evolves or coverage changes
+- **Library References** - When discovering new patterns
+- **Configuration** - When adding dependencies or changing setup
 
 ### Update Rarely (Major Changes Only)
-- **Project Overview** (ID: 1) - Only if scope or goals change
-- **Architecture Design** (ID: 2) - Only if design decisions fundamentally change
-- **API Design** (ID: 3) - Only if endpoint/model structure patterns change
+- **Project Overview** - Only if scope or goals change
+- **Architecture Design** - Only if design decisions fundamentally change
+- **API Design** - Only if endpoint/model structure patterns change
 
 ---
 

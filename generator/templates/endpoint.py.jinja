@@ -1,0 +1,57 @@
+{#
+Endpoint class template for Proxmox API.
+#}
+"""
+Generated endpoint classes for Proxmox VE API endpoints.
+
+This module contains auto-generated endpoint classes for hierarchical
+API access to Proxmox VE endpoints.
+DO NOT EDIT MANUALLY
+"""
+
+from typing import Any
+from prmxctrl.base.endpoint_base import EndpointBase
+{% if imports %}
+{{ imports }}  # type: ignore
+{% endif %}
+
+{% for class in classes %}
+class {{ class.name }}(EndpointBase):
+    """
+    {{ class.docstring or 'Auto-generated endpoint class' }}
+    """
+    {% if class.properties %}
+
+    # Sub-endpoint properties
+    {% for prop in class.properties %}
+    @property
+    def {{ prop.name }}(self) -> {{ prop.class }}:
+        """Access {{ prop.path }} endpoints"""
+        from {{ prop.import_path }} import {{ prop.class }}  # type: ignore
+        return {{ prop.class }}(self._client, self._build_path("{{ prop.path }}"))
+    {% endfor %}
+    {% endif %}
+
+    {% if class.call_method %}
+
+    def __call__(self, {{ class.call_method.param_name }}: {{ class.call_method.param_type }}) -> {{ class.call_method.item_class }}:
+        """Access specific {{ class.call_method.param_name }}"""
+        from {{ class.call_method.import_path }} import {{ class.call_method.item_class }}  # type: ignore
+        return {{ class.call_method.item_class }}(
+            self._client,
+            self._build_path(str({{ class.call_method.param_name }}))
+        )
+    {% endif %}
+
+    {% for method in class.methods %}
+
+    async def {{ method.name }}(self, {% if method.param_model %}params: {{ method.param_model }} | None = None{% endif %}) -> {% if method.response_model %}{{ method.response_model }}{% else %}Any{% endif %}:
+        """
+        {{ method.description }}
+
+        HTTP Method: {{ method.http_method }}
+        """
+        {{ method.return_statement }}
+    {% endfor %}
+
+{% endfor %}

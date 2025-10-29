@@ -8,7 +8,7 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import httpx
 
@@ -94,7 +94,7 @@ class SchemaFetcher:
 
         raise ValueError("Could not find matching closing bracket for apiSchema")
 
-    def parse_json(self, json_str: str) -> List[Dict[str, Any]]:
+    def parse_json(self, json_str: str) -> list[dict[str, Any]]:
         """Parse JSON string to Python objects.
 
         Args:
@@ -108,7 +108,7 @@ class SchemaFetcher:
         """
         return json.loads(json_str)
 
-    def validate_schema(self, schema: List[Dict[str, Any]]) -> None:
+    def validate_schema(self, schema: list[dict[str, Any]]) -> None:
         """Basic validation of parsed schema structure.
 
         Args:
@@ -130,8 +130,8 @@ class SchemaFetcher:
             raise ValueError(f"Schema items must have required keys: {required_keys}")
 
     async def fetch_and_parse(
-        self, cache_file: Optional[str] = None, use_cache: bool = True
-    ) -> List[Dict[str, Any]]:
+        self, cache_file: str | None = None, use_cache: bool = True
+    ) -> list[dict[str, Any]]:
         """Complete pipeline: fetch, parse, validate, and cache schema.
 
         Args:
@@ -153,7 +153,7 @@ class SchemaFetcher:
         # Try to load from cache first
         if use_cache and os.path.exists(cache_file):
             try:
-                with open(cache_file, "r", encoding="utf-8") as f:
+                with open(cache_file, encoding="utf-8") as f:
                     cached_schema = json.load(f)
                 # Validate cached schema
                 self.validate_schema(cached_schema)
@@ -179,7 +179,7 @@ class SchemaFetcher:
 
         return schema
 
-    def fetch_and_parse_local(self, local_file: Optional[str] = None) -> List[Dict[str, Any]]:
+    def fetch_and_parse_local(self, local_file: str | None = None) -> list[dict[str, Any]]:
         """Load and parse schema from local apidata.js file.
 
         Args:
@@ -201,7 +201,7 @@ class SchemaFetcher:
             raise FileNotFoundError(f"Local schema file not found: {local_file}")
 
         # Read local file
-        with open(local_file, "r", encoding="utf-8") as f:
+        with open(local_file, encoding="utf-8") as f:
             js_content = f.read()
 
         # Extract and parse JSON

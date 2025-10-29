@@ -8,7 +8,7 @@ and error handling.
 
 import asyncio
 import json
-from typing import Any, Dict, Optional, Union
+from typing import Any, cast
 
 import httpx
 
@@ -16,10 +16,8 @@ from .exceptions import (
     ProxmoxAPIError,
     ProxmoxAuthError,
     ProxmoxConnectionError,
-    ProxmoxTimeoutError,
 )
 from .types import (
-    APIErrorResponse,
     APIResponse,
     AuthToken,
     HTTPHeaders,
@@ -46,10 +44,10 @@ class HTTPClient:
     def __init__(
         self,
         host: str,
-        user: Optional[Username] = None,
-        password: Optional[Password] = None,
-        token_name: Optional[str] = None,
-        token_value: Optional[AuthToken] = None,
+        user: Username | None = None,
+        password: Password | None = None,
+        token_name: str | None = None,
+        token_value: AuthToken | None = None,
         verify_ssl: SSLVerifyMode = True,
         timeout: TimeoutSeconds = 30.0,
         max_retries: int = 3,
@@ -83,9 +81,9 @@ class HTTPClient:
         self._validate_auth_params()
 
         # Internal state
-        self._client: Optional[httpx.AsyncClient] = None
-        self._csrf_token: Optional[str] = None
-        self._ticket: Optional[str] = None
+        self._client: httpx.AsyncClient | None = None
+        self._csrf_token: str | None = None
+        self._ticket: str | None = None
         self._is_authenticated = False
 
     def _validate_auth_params(self) -> None:
@@ -178,7 +176,9 @@ class HTTPClient:
             if hasattr(e, "response"):
                 # HTTP error with response
                 raise ProxmoxAuthError(
-                    f"Authentication failed: {e.response.status_code}", auth_method="password", cause=e  # type: ignore
+                    f"Authentication failed: {e.response.status_code}",
+                    auth_method="password",
+                    cause=e,
                 ) from e
             else:
                 raise ProxmoxAuthError(
@@ -217,10 +217,10 @@ class HTTPClient:
         method: str,
         path: str,
         *,
-        params: Optional[QueryParams] = None,
-        data: Optional[Union[Dict[str, Any], str]] = None,
-        json_data: Optional[Dict[str, Any]] = None,
-        headers: Optional[HTTPHeaders] = None,
+        params: QueryParams | None = None,
+        data: dict[str, Any] | str | None = None,
+        json_data: dict[str, Any] | None = None,
+        headers: HTTPHeaders | None = None,
     ) -> APIResponse:
         """
         Make an HTTP request to the Proxmox API.
@@ -253,7 +253,7 @@ class HTTPClient:
         api_path = f"/api2/json{path}"
 
         # Prepare request data
-        request_kwargs: Dict[str, Any] = {
+        request_kwargs: dict[str, Any] = {
             "method": method,
             "url": api_path,
             "params": params,
@@ -272,7 +272,7 @@ class HTTPClient:
         if method.upper() != "GET" and self._csrf_token:
             request_kwargs["headers"]["CSRFPreventionToken"] = self._csrf_token
 
-        last_exception: Optional[Exception] = None
+        last_exception: Exception | None = None
 
         for attempt in range(self.max_retries + 1):
             try:
@@ -282,7 +282,7 @@ class HTTPClient:
             except Exception as e:
                 if hasattr(e, "response"):
                     # HTTP error with response
-                    return await self._handle_response(e.response)  # type: ignore
+                    return await self._handle_response(e.response)
                 else:
                     # Non-HTTP error
                     last_exception = e
@@ -319,8 +319,8 @@ class HTTPClient:
         """
         try:
             # Try to parse JSON response
-            data = response.json()
-        except json.JSONDecodeError:
+            data = cast(dict[str, Any], response.json())
+        except json.JSONDecodeError as err:
             # Non-JSON response
             if response.is_success:
                 # Success but no JSON - return empty dict
@@ -331,7 +331,7 @@ class HTTPClient:
                     f"API returned {response.status_code} with non-JSON response",
                     status_code=response.status_code,
                     response_body=response.text,
-                )
+                ) from err
 
         # Check for API errors
         if not response.is_success:
@@ -353,15 +353,15 @@ class HTTPClient:
                 )
 
         # Success response
-        return data.get("data", {})
+        return cast(APIResponse, data.get("data", {}))
 
     # Convenience methods
     async def get(
         self,
         path: str,
         *,
-        params: Optional[QueryParams] = None,
-        headers: Optional[HTTPHeaders] = None,
+        params: QueryParams | None = None,
+        headers: HTTPHeaders | None = None,
     ) -> APIResponse:
         """Make a GET request."""
         return await self.request("GET", path, params=params, headers=headers)
@@ -370,10 +370,10 @@ class HTTPClient:
         self,
         path: str,
         *,
-        params: Optional[QueryParams] = None,
-        data: Optional[Union[Dict[str, Any], str]] = None,
-        json_data: Optional[Dict[str, Any]] = None,
-        headers: Optional[HTTPHeaders] = None,
+        params: QueryParams | None = None,
+        data: dict[str, Any] | str | None = None,
+        json_data: dict[str, Any] | None = None,
+        headers: HTTPHeaders | None = None,
     ) -> APIResponse:
         """Make a POST request."""
         return await self.request(
@@ -384,10 +384,10 @@ class HTTPClient:
         self,
         path: str,
         *,
-        params: Optional[QueryParams] = None,
-        data: Optional[Union[Dict[str, Any], str]] = None,
-        json_data: Optional[Dict[str, Any]] = None,
-        headers: Optional[HTTPHeaders] = None,
+        params: QueryParams | None = None,
+        data: dict[str, Any] | str | None = None,
+        json_data: dict[str, Any] | None = None,
+        headers: HTTPHeaders | None = None,
     ) -> APIResponse:
         """Make a PUT request."""
         return await self.request(
@@ -398,8 +398,8 @@ class HTTPClient:
         self,
         path: str,
         *,
-        params: Optional[QueryParams] = None,
-        headers: Optional[HTTPHeaders] = None,
+        params: QueryParams | None = None,
+        headers: HTTPHeaders | None = None,
     ) -> APIResponse:
         """Make a DELETE request."""
         return await self.request("DELETE", path, params=params, headers=headers)

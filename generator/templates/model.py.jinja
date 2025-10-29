@@ -21,14 +21,13 @@ class {{ model.name }}({{ model.base_class }}):
 {% for field in model.fields %}
     {{ field.name }}: {{ field.type_annotation }} = Field(
 {% for key, value in field.field_kwargs.items() %}
-        {{ key }}={{ value }},
+{% if value is not none %}
+        {{ key }}={% if value is string %}{{ value | tojson }}{% elif value is number %}{{ value }}{% elif value is boolean %}{{ value | lower }}{% else %}{{ value | tojson }}{% endif %},
+{% endif %}
 {% endfor %}
     )
 {% endfor %}
 
-    class Config:
-        """Pydantic configuration."""
-        extra = "forbid"  # Forbid extra fields
-        validate_assignment = True  # Validate on assignment
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
 {% endfor %}

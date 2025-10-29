@@ -4,6 +4,7 @@ Base classes and utilities for the prmxctrl SDK.
 This module contains the hand-written base classes that support all generated code.
 """
 
+from .endpoint_base import EndpointBase
 from .exceptions import (
     ProxmoxAPIError,
     ProxmoxAuthError,
@@ -12,9 +13,9 @@ from .exceptions import (
     ProxmoxTimeoutError,
     ProxmoxValidationError,
 )
-from .endpoint_base import EndpointBase
 from .http_client import HTTPClient
 from .types import (
+    VMID,
     APIErrorResponse,
     APIResponse,
     JSONArray,
@@ -41,7 +42,6 @@ from .types import (
     PruneBackupsConfig,
     StorageID,
     StorageIDList,
-    VMID,
     VMIDList,
 )
 

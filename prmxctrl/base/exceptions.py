@@ -5,7 +5,7 @@ Custom exceptions for the prmxctrl SDK to provide clear error handling
 and debugging information for Proxmox API interactions.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ProxmoxError(Exception):
@@ -16,7 +16,7 @@ class ProxmoxError(Exception):
     allowing users to catch all SDK-related errors with a single except block.
     """
 
-    def __init__(self, message: str, cause: Optional[Exception] = None) -> None:
+    def __init__(self, message: str, cause: Exception | None = None) -> None:
         """
         Initialize the base Proxmox error.
 
@@ -46,8 +46,10 @@ class ProxmoxAuthError(ProxmoxError):
     def __init__(
         self,
         message: str = "Authentication failed",
-        auth_method: Optional[str] = None,
-        cause: Optional[Exception] = None,
+        auth_method: str | None = None,
+        status_code: int | None = None,
+        response_data: dict[str, Any] | None = None,
+        cause: Exception | None = None,
     ) -> None:
         """
         Initialize authentication error.
@@ -55,10 +57,14 @@ class ProxmoxAuthError(ProxmoxError):
         Args:
             message: Error description
             auth_method: Authentication method that failed ('password' or 'token')
+            status_code: HTTP status code from the API response (if applicable)
+            response_data: Parsed JSON response data containing error details (if applicable)
             cause: Original exception that caused this error
         """
         super().__init__(message, cause)
         self.auth_method = auth_method
+        self.status_code = status_code
+        self.response_data = response_data or {}
 
 
 class ProxmoxConnectionError(ProxmoxError):
@@ -72,8 +78,8 @@ class ProxmoxConnectionError(ProxmoxError):
     def __init__(
         self,
         message: str = "Connection failed",
-        host: Optional[str] = None,
-        cause: Optional[Exception] = None,
+        host: str | None = None,
+        cause: Exception | None = None,
     ) -> None:
         """
         Initialize connection error.
@@ -98,8 +104,8 @@ class ProxmoxTimeoutError(ProxmoxConnectionError):
     def __init__(
         self,
         message: str = "Request timed out",
-        timeout_seconds: Optional[float] = None,
-        cause: Optional[Exception] = None,
+        timeout_seconds: float | None = None,
+        cause: Exception | None = None,
     ) -> None:
         """
         Initialize timeout error.
@@ -125,8 +131,9 @@ class ProxmoxAPIError(ProxmoxError):
         self,
         message: str,
         status_code: int,
-        response_data: Optional[Dict[str, Any]] = None,
-        cause: Optional[Exception] = None,
+        response_data: dict[str, Any] | None = None,
+        response_body: str | None = None,
+        cause: Exception | None = None,
     ) -> None:
         """
         Initialize API error.
@@ -135,11 +142,13 @@ class ProxmoxAPIError(ProxmoxError):
             message: Error description
             status_code: HTTP status code from the API response
             response_data: Parsed JSON response data containing error details
+            response_body: Raw response body text (for non-JSON responses)
             cause: Original exception that caused this error
         """
         super().__init__(message, cause)
         self.status_code = status_code
         self.response_data = response_data or {}
+        self.response_body = response_body
 
     @property
     def is_client_error(self) -> bool:
@@ -163,8 +172,8 @@ class ProxmoxValidationError(ProxmoxError):
     def __init__(
         self,
         message: str,
-        field_errors: Optional[List[Any]] = None,
-        cause: Optional[Exception] = None,
+        field_errors: list[Any] | None = None,
+        cause: Exception | None = None,
     ) -> None:
         """
         Initialize validation error.

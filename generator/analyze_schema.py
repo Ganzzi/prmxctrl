@@ -4,11 +4,11 @@ This module analyzes parsed schema endpoints to generate metadata
 for code generation, including statistics, patterns, and validation.
 """
 
-from collections import defaultdict, Counter
-from typing import Dict, List, Any, Set
+from collections import Counter, defaultdict
 from dataclasses import dataclass
+from typing import Any
 
-from .parse_schema import Endpoint, Method, Parameter
+from .parse_schema import Endpoint, Parameter
 
 
 @dataclass
@@ -21,10 +21,10 @@ class SchemaStats:
     endpoints_with_children: int = 0
     leaf_endpoints: int = 0
     endpoints_with_path_params: int = 0
-    unique_path_param_names: Set[str] = None
-    method_counts: Dict[str, int] = None
-    parameter_type_counts: Dict[str, int] = None
-    format_counts: Dict[str, int] = None
+    unique_path_param_names: set[str] = None
+    method_counts: dict[str, int] = None
+    parameter_type_counts: dict[str, int] = None
+    format_counts: dict[str, int] = None
 
     def __post_init__(self):
         if self.unique_path_param_names is None:
@@ -42,16 +42,16 @@ class SchemaAnalysis:
     """Complete analysis of parsed schema."""
 
     stats: SchemaStats
-    endpoint_tree: Dict[str, Any]
-    common_models: Dict[str, List[Parameter]]
-    edge_cases: List[str]
-    parameter_patterns: Dict[str, Any]
+    endpoint_tree: dict[str, Any]
+    common_models: dict[str, list[Parameter]]
+    edge_cases: list[str]
+    parameter_patterns: dict[str, Any]
 
 
 class SchemaAnalyzer:
     """Analyze parsed schema endpoints for code generation metadata."""
 
-    def analyze(self, endpoints: List[Endpoint]) -> SchemaAnalysis:
+    def analyze(self, endpoints: list[Endpoint]) -> SchemaAnalysis:
         """Analyze endpoints and generate comprehensive metadata.
 
         Args:
@@ -74,7 +74,7 @@ class SchemaAnalyzer:
             parameter_patterns=parameter_patterns,
         )
 
-    def _collect_stats(self, endpoints: List[Endpoint]) -> SchemaStats:
+    def _collect_stats(self, endpoints: list[Endpoint]) -> SchemaStats:
         """Collect comprehensive statistics about the schema.
 
         Args:
@@ -130,7 +130,7 @@ class SchemaAnalyzer:
 
         return stats
 
-    def _build_endpoint_tree(self, endpoints: List[Endpoint]) -> Dict[str, Any]:
+    def _build_endpoint_tree(self, endpoints: list[Endpoint]) -> dict[str, Any]:
         """Build hierarchical tree representation of endpoints.
 
         Args:
@@ -140,7 +140,7 @@ class SchemaAnalyzer:
             Dictionary representing the endpoint hierarchy.
         """
 
-        def endpoint_to_dict(endpoint: Endpoint) -> Dict[str, Any]:
+        def endpoint_to_dict(endpoint: Endpoint) -> dict[str, Any]:
             result = {
                 "path": endpoint.path,
                 "text": endpoint.text,
@@ -163,7 +163,7 @@ class SchemaAnalyzer:
             "total_endpoints": len(endpoints),
         }
 
-    def _identify_common_models(self, endpoints: List[Endpoint]) -> Dict[str, List[Parameter]]:
+    def _identify_common_models(self, endpoints: list[Endpoint]) -> dict[str, list[Parameter]]:
         """Identify common parameter sets that could be reused as models.
 
         Args:
@@ -201,7 +201,7 @@ class SchemaAnalyzer:
 
         return common_models
 
-    def _detect_edge_cases(self, endpoints: List[Endpoint]) -> List[str]:
+    def _detect_edge_cases(self, endpoints: list[Endpoint]) -> list[str]:
         """Detect edge cases and unusual patterns in the schema.
 
         Args:
@@ -251,7 +251,7 @@ class SchemaAnalyzer:
 
         return edge_cases
 
-    def _analyze_parameter_patterns(self, endpoints: List[Endpoint]) -> Dict[str, Any]:
+    def _analyze_parameter_patterns(self, endpoints: list[Endpoint]) -> dict[str, Any]:
         """Analyze parameter usage patterns across the schema.
 
         Args:

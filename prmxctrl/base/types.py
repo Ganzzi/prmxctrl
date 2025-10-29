@@ -5,26 +5,24 @@ This module provides type definitions that are used throughout the SDK,
 including custom Pydantic types for Proxmox-specific data formats.
 """
 
-from typing import Any, Dict, List, Optional, Union
-
 # Standard library imports for type annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from httpx import Response
+    pass
 
 # Common type aliases for better readability
-JSONValue = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
-JSONObject = Dict[str, JSONValue]
-JSONArray = List[JSONValue]
+JSONValue = str | int | float | bool | None | dict[str, Any] | list[Any]
+JSONObject = dict[str, JSONValue]
+JSONArray = list[JSONValue]
 
 # HTTP response types
 HTTPStatusCode = int
-HTTPHeaders = Dict[str, str]
+HTTPHeaders = dict[str, str]
 
 # Proxmox API response types
 APIResponse = JSONObject
-APIErrorResponse = Dict[str, Any]  # Proxmox error response format
+APIErrorResponse = dict[str, Any]  # Proxmox error response format
 
 # Authentication types
 AuthToken = str
@@ -45,16 +43,16 @@ PoolID = str
 
 # Node-related types
 ProxmoxNode = str  # Node name (e.g., "pve1", "pve-node-01")
-ProxmoxNodeList = List[ProxmoxNode]
+ProxmoxNodeList = list[ProxmoxNode]
 
 # Virtual machine types
 ProxmoxVMID = int  # VM/Container ID (positive integer)
-ProxmoxVMIDList = List[ProxmoxVMID]
+ProxmoxVMIDList = list[ProxmoxVMID]
 
 # Storage types
 ProxmoxStorageID = str  # Storage identifier
 ProxmoxVolumeID = str  # Volume identifier with optional storage prefix
-ProxmoxVolumeIDOrPath = Union[ProxmoxVolumeID, str]  # Volume ID or absolute path
+ProxmoxVolumeIDOrPath = ProxmoxVolumeID | str  # Volume ID or absolute path
 
 # Network types
 MACAddress = str  # MAC address in XX:XX:XX:XX:XX:XX format
@@ -70,32 +68,32 @@ ProxmoxTokenID = str  # API token identifier
 
 # Generic Proxmox types
 ProxmoxConfigID = str  # Generic configuration identifier
-ProxmoxConfigIDList = List[ProxmoxConfigID]
+ProxmoxConfigIDList = list[ProxmoxConfigID]
 
 # Task and job types
 ProxmoxTaskID = str  # Task identifier (UPID format)
 ProxmoxJobID = str  # Job identifier
 
 # Backup types
-PruneBackupsConfig = Dict[str, Any]  # Backup pruning configuration
+PruneBackupsConfig = dict[str, Any]  # Backup pruning configuration
 
 # Certificate types
 PEMString = str  # PEM-encoded certificate or key
 
 # Utility types for internal use
 PathSegment = str  # URL path segment
-QueryParamValue = Union[str, int, float, bool, List[str]]
-QueryParams = Dict[str, QueryParamValue]
+QueryParamValue = str | int | float | bool | list[str]
+QueryParams = dict[str, QueryParamValue]
 
 # Response parsing types
-RawResponseData = Union[bytes, str, JSONObject, JSONArray]
+RawResponseData = bytes | str | JSONObject | JSONArray
 
 # Context manager types for async operations
 AsyncContextManager = Any  # Type hint for async context managers
 
 # Configuration types
-SSLVerifyMode = Union[bool, str]  # SSL verification: True, False, or path to CA bundle
-TimeoutSeconds = Union[float, int]  # Timeout in seconds
+SSLVerifyMode = bool | str  # SSL verification: True, False, or path to CA bundle
+TimeoutSeconds = float | int  # Timeout in seconds
 
 # Internal SDK types
 EndpointPath = str  # API endpoint path (e.g., "/nodes/{node}/qemu/{vmid}")
@@ -104,23 +102,23 @@ ParameterName = str  # Parameter name
 FieldName = str  # Model field name
 
 # Type aliases for complex generic types
-OptionalJSONObject = Optional[JSONObject]
-OptionalJSONArray = Optional[JSONArray]
-OptionalAPIResponse = Optional[APIResponse]
+OptionalJSONObject = JSONObject | None
+OptionalJSONArray = JSONArray | None
+OptionalAPIResponse = APIResponse | None
 
 # Union types for flexible parameters
-StringOrInt = Union[str, int]
-StringOrFloat = Union[str, float]
-StringOrBool = Union[str, bool]
+StringOrInt = str | int
+StringOrFloat = str | float
+StringOrBool = str | bool
 
 # List types for batch operations
-NodeList = List[NodeName]
-VMIDList = List[VMID]
-StorageIDList = List[StorageID]
+NodeList = list[NodeName]
+VMIDList = list[VMID]
+StorageIDList = list[StorageID]
 
 # Configuration object types
-HTTPClientConfig = Dict[str, Any]  # HTTP client configuration
-AuthConfig = Dict[str, Any]  # Authentication configuration
+HTTPClientConfig = dict[str, Any]  # HTTP client configuration
+AuthConfig = dict[str, Any]  # Authentication configuration
 
 # Export all public types
 __all__ = [

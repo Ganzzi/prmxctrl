@@ -5,9 +5,8 @@ This module handles the conversion of Proxmox API parameter specifications
 to appropriate Python types and Pydantic field definitions.
 """
 
-from typing import Any, Dict, List, Optional, Union, Tuple
 from enum import Enum
-import re
+from typing import Any
 
 
 class ProxmoxType(Enum):
@@ -29,8 +28,8 @@ class PythonType(Enum):
     INT = "int"
     FLOAT = "float"
     BOOL = "bool"
-    DICT = "Dict[str, Any]"
-    LIST = "List[Any]"
+    DICT = "dict[str, Any]"
+    LIST = "list[Any]"
     NONE = "None"
 
 
@@ -45,16 +44,16 @@ class TypeMapper:
     FORMAT_MAPPINGS = {
         # Node-related formats
         "pve-node": "ProxmoxNode",
-        "pve-node-list": "List[ProxmoxNode]",
+        "pve-node-list": "list[ProxmoxNode]",
         # VM/Container ID formats
         "pve-vmid": "ProxmoxVMID",
-        "pve-vmid-list": "List[ProxmoxVMID]",
+        "pve-vmid-list": "list[ProxmoxVMID]",
         # Storage formats
         "pve-storage-id": "str",  # Storage ID/name
-        "pve-storage-id-list": "List[str]",
+        "pve-storage-id-list": "list[str]",
         # Replication formats
         "pve-replication-job-id": "str",
-        "pve-replication-job-id-list": "List[str]",
+        "pve-replication-job-id-list": "list[str]",
         # Config ID formats
         "pve-configid-list": "str",  # Comma-separated list
         # Time formats
@@ -79,8 +78,8 @@ class TypeMapper:
 
     @classmethod
     def map_parameter_type(
-        cls, param_spec: Dict[str, Any], param_name: str = ""
-    ) -> Tuple[str, Dict[str, Any]]:
+        cls, param_spec: dict[str, Any], param_name: str = ""
+    ) -> tuple[str, dict[str, Any]]:
         """
         Map a Proxmox parameter specification to Python type and Pydantic Field kwargs.
 
@@ -109,21 +108,24 @@ class TypeMapper:
 
     @classmethod
     def _map_primitive_type(
-        cls, param_spec: Dict[str, Any], param_name: str, is_optional: bool, default_value: Any
-    ) -> Tuple[str, Dict[str, Any]]:
+        cls, param_spec: dict[str, Any], param_name: str, is_optional: bool, default_value: Any
+    ) -> tuple[str, dict[str, Any]]:
         """Map primitive parameter types."""
         param_type = param_spec.get("type", "string")
         param_format = param_spec.get("format")
 
-        # Base type mapping
+        # Base type mapping - make more permissive for Proxmox API compatibility
         if param_type == "string":
-            python_type = cls._map_string_type(param_spec)
+            python_type = cls._map_string_type(param_spec, default_value)
         elif param_type == "integer":
-            python_type = "int"
+            # Integers in Proxmox often accept strings like "unlimited"
+            python_type = "int | str"
         elif param_type == "number":
-            python_type = "float"
+            # Numbers in Proxmox can sometimes have string defaults
+            python_type = "float | str"
         elif param_type == "boolean":
-            python_type = "bool"
+            # Booleans in Proxmox accept true/false, 1/0, yes/no
+            python_type = "bool | int | str"
         elif param_type == "null":
             python_type = "None"
         else:
@@ -134,17 +136,35 @@ class TypeMapper:
         if param_format and isinstance(param_format, str) and param_format in cls.FORMAT_MAPPINGS:
             python_type = cls.FORMAT_MAPPINGS[param_format]
 
+        # Adjust type based on default value compatibility
+        python_type = cls._adjust_type_for_default(python_type, default_value)
+
         # Handle optional types
         if is_optional:
-            python_type = f"Optional[{python_type}]"
+            python_type = f"{python_type} | None"
 
         # Build Pydantic Field kwargs
-        field_kwargs = cls._build_field_kwargs(param_spec, default_value)
+        field_kwargs = cls._build_field_kwargs(param_spec, default_value, param_type)
 
         return python_type, field_kwargs
 
     @classmethod
-    def _map_string_type(cls, param_spec: Dict[str, Any]) -> str:
+    def _adjust_type_for_default(cls, python_type: str, default_value: Any) -> str:
+        """
+        Adjust the Python type to be compatible with the default value.
+
+        For Proxmox API compatibility, we make types more permissive by default,
+        but this method handles any remaining edge cases.
+        """
+        if default_value is None:
+            return python_type
+
+        # For most cases, our permissive base types should handle the defaults
+        # This method is kept for future edge cases
+        return python_type
+
+    @classmethod
+    def _map_string_type(cls, param_spec: dict[str, Any], default_value: Any = None) -> str:
         """Map string type with format considerations."""
         param_format = param_spec.get("format")
 
@@ -152,10 +172,14 @@ class TypeMapper:
         if "enum" in param_spec and param_spec["enum"] is not None:
             enum_values = param_spec["enum"]
             if len(enum_values) <= 10:  # Use Literal for small enums
-                from typing import Literal
+
+                # Include default value in enum if it's not already there
+                all_values = set(enum_values)
+                if default_value is not None and default_value not in all_values:
+                    all_values.add(default_value)
 
                 # Create a union of literal values
-                literals = [f'"{v}"' for v in enum_values]
+                literals = [f'"{v}"' for v in sorted(all_values)]
                 return f"Literal[{', '.join(literals)}]"
             else:
                 # For large enums, use str with validation
@@ -174,82 +198,131 @@ class TypeMapper:
 
     @classmethod
     def _map_array_type(
-        cls, param_spec: Dict[str, Any], param_name: str, is_optional: bool, default_value: Any
-    ) -> Tuple[str, Dict[str, Any]]:
+        cls, param_spec: dict[str, Any], param_name: str, is_optional: bool, default_value: Any
+    ) -> tuple[str, dict[str, Any]]:
         """Map array parameter types."""
         items_spec = param_spec.get("items", {})
         if not items_spec:
             # Generic array
-            python_type = "List[Any]"
+            python_type = "list[Any]"
         else:
             # Typed array
             item_type, _ = cls.map_parameter_type(items_spec, f"{param_name}_item")
-            python_type = f"List[{item_type}]"
+            python_type = f"list[{item_type}]"
 
         if is_optional:
-            python_type = f"Optional[{python_type}]"
+            python_type = f"{python_type} | None"
 
-        field_kwargs = cls._build_field_kwargs(param_spec, default_value)
+        field_kwargs = cls._build_field_kwargs(param_spec, default_value, "array")
 
         return python_type, field_kwargs
 
     @classmethod
     def _map_object_type(
-        cls, param_spec: Dict[str, Any], param_name: str, is_optional: bool, default_value: Any
-    ) -> Tuple[str, Dict[str, Any]]:
+        cls, param_spec: dict[str, Any], param_name: str, is_optional: bool, default_value: Any
+    ) -> tuple[str, dict[str, Any]]:
         """Map object parameter types."""
         # For now, treat objects as generic dictionaries
         # TODO: Generate nested models for complex objects
-        python_type = "Dict[str, Any]"
+        python_type = "dict[str, Any]"
 
         if is_optional:
-            python_type = f"Optional[{python_type}]"
+            python_type = f"{python_type} | None"
 
-        field_kwargs = cls._build_field_kwargs(param_spec, default_value)
+        field_kwargs = cls._build_field_kwargs(param_spec, default_value, "object")
 
         return python_type, field_kwargs
 
     @classmethod
-    def _build_field_kwargs(cls, param_spec: Dict[str, Any], default_value: Any) -> Dict[str, str]:
+    def _build_field_kwargs(
+        cls, param_spec: dict[str, Any], default_value: Any, param_type: str = "string"
+    ) -> dict[str, Any]:
         """Build Pydantic Field kwargs from parameter constraints."""
         field_kwargs = {}
 
         # Description
         if "description" in param_spec:
-            field_kwargs["description"] = repr(param_spec["description"])
+            field_kwargs["description"] = param_spec["description"]
 
         # Default value
-        if "default" in param_spec:
-            field_kwargs["default"] = repr(param_spec["default"])
+        if default_value is not None:
+            field_kwargs["default"] = default_value
 
-        # Numeric constraints
-        if "minimum" in param_spec:
-            field_kwargs["ge"] = str(param_spec["minimum"])
-        if "maximum" in param_spec:
-            field_kwargs["le"] = str(param_spec["maximum"])
-        if "exclusiveMinimum" in param_spec:
-            field_kwargs["gt"] = str(param_spec["exclusiveMinimum"])
-        if "exclusiveMaximum" in param_spec:
-            field_kwargs["lt"] = str(param_spec["exclusiveMaximum"])
+        # Numeric constraints (only for numeric types)
+        if param_type in ("integer", "number"):
+            if "minimum" in param_spec and param_spec["minimum"] is not None:
+                try:
+                    field_kwargs["ge"] = (
+                        int(param_spec["minimum"])
+                        if param_type == "integer"
+                        else float(param_spec["minimum"])
+                    )
+                except (ValueError, TypeError):
+                    field_kwargs["ge"] = param_spec["minimum"]
+            if "maximum" in param_spec and param_spec["maximum"] is not None:
+                try:
+                    field_kwargs["le"] = (
+                        int(param_spec["maximum"])
+                        if param_type == "integer"
+                        else float(param_spec["maximum"])
+                    )
+                except (ValueError, TypeError):
+                    field_kwargs["le"] = param_spec["maximum"]
+            if "exclusiveMinimum" in param_spec and param_spec["exclusiveMinimum"] is not None:
+                try:
+                    field_kwargs["gt"] = (
+                        int(param_spec["exclusiveMinimum"])
+                        if param_type == "integer"
+                        else float(param_spec["exclusiveMinimum"])
+                    )
+                except (ValueError, TypeError):
+                    field_kwargs["gt"] = param_spec["exclusiveMinimum"]
+            if "exclusiveMaximum" in param_spec and param_spec["exclusiveMaximum"] is not None:
+                try:
+                    field_kwargs["lt"] = (
+                        int(param_spec["exclusiveMaximum"])
+                        if param_type == "integer"
+                        else float(param_spec["exclusiveMaximum"])
+                    )
+                except (ValueError, TypeError):
+                    field_kwargs["lt"] = param_spec["exclusiveMaximum"]
 
-        # String constraints
-        if "minLength" in param_spec:
-            field_kwargs["min_length"] = str(param_spec["minLength"])
-        if "maxLength" in param_spec:
-            field_kwargs["max_length"] = str(param_spec["maxLength"])
+        # String constraints (only for string types)
+        if param_type == "string":
+            if "minLength" in param_spec and param_spec["minLength"] is not None:
+                try:
+                    field_kwargs["min_length"] = int(param_spec["minLength"])
+                except (ValueError, TypeError):
+                    field_kwargs["min_length"] = param_spec["minLength"]
+            if "maxLength" in param_spec and param_spec["maxLength"] is not None:
+                try:
+                    field_kwargs["max_length"] = int(param_spec["maxLength"])
+                except (ValueError, TypeError):
+                    field_kwargs["max_length"] = param_spec["maxLength"]
 
-        # Pattern validation
-        if "pattern" in param_spec:
-            field_kwargs["pattern"] = repr(param_spec["pattern"])
+            # Pattern validation - temporarily disabled due to regex compilation issues
+            # if "pattern" in param_spec and param_spec["pattern"] is not None:
+            #     pattern = param_spec["pattern"]
+            #     # Convert regex patterns to Python-compatible format
+            #     if pattern:
+            #         # Fix case-insensitive flag syntax: (?^i:...) -> (?i:...)
+            #         pattern = re.sub(r"\(\?\^i:", "(?i:", pattern)
+            #         # Skip extremely large patterns that would exceed regex compilation limits
+            #         if len(pattern) > 10000:  # Arbitrary limit to prevent compilation issues
+            #             # Skip this pattern constraint
+            #             pass
+            #         else:
+            #             field_kwargs["pattern"] = pattern
 
-        # Enum validation (for large enums)
-        if "enum" in param_spec and param_spec["enum"] is not None and len(param_spec["enum"]) > 10:
-            field_kwargs["enum"] = repr(param_spec["enum"])
+        # Enum validation (for large enums) - disabled as Pydantic Field doesn't support enum parameter
+        # Large enums are handled by returning "str" type without validation
+        # if "enum" in param_spec and param_spec["enum"] is not None and len(param_spec["enum"]) > 10:
+        #     field_kwargs["enum"] = param_spec["enum"]
 
         return field_kwargs
 
     @classmethod
-    def get_required_imports(cls, types_used: List[str]) -> List[str]:
+    def get_required_imports(cls, types_used: list[str]) -> list[str]:
         """
         Get required import statements for the given types.
 
@@ -266,17 +339,13 @@ class TypeMapper:
         pydantic_imports = set()
 
         for type_str in types_used:
-            # Check for Optional
-            if "Optional[" in type_str:
-                typing_imports.add("Optional")
-
-            # Check for List
+            # Check for List (legacy - should not happen with new code)
             if "List[" in type_str:
                 typing_imports.add("List")
 
-            # Check for Dict
-            if "Dict[" in type_str:
-                typing_imports.add("Dict")
+            # Check for Dict (not needed for built-in dict)
+            # if "dict[" in type_str:
+            #     typing_imports.add("Dict")
 
             # Check for Literal
             if "Literal[" in type_str:

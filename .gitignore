@@ -148,7 +148,7 @@ Thumbs.db
 # Project specific
 # Generated SDK files (can be regenerated)
 prmxctrl/models/*.py
-prmxctrl/endpoints/*.py
+prmxctrl/endpoints/**/*.py
 prmxctrl/client.py
 !prmxctrl/__init__.py
 !prmxctrl/base/

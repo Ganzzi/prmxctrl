@@ -5,7 +5,7 @@ This module provides the EndpointBase class that all generated endpoint classes
 inherit from. It handles path building, HTTP method delegation, and response parsing.
 """
 
-from typing import Any, Dict, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 from .types import APIResponse, HTTPHeaders, QueryParams
@@ -80,9 +80,9 @@ class EndpointBase:
 
     async def _get(
         self,
-        path: Optional[str] = None,
-        params: Optional[QueryParams] = None,
-        headers: Optional[HTTPHeaders] = None,
+        path: str | None = None,
+        params: QueryParams | None = None,
+        headers: HTTPHeaders | None = None,
     ) -> APIResponse:
         """
         Make a GET request.
@@ -100,10 +100,10 @@ class EndpointBase:
 
     async def _post(
         self,
-        path: Optional[str] = None,
-        data: Optional[Dict[str, Any]] = None,
-        json_data: Optional[Dict[str, Any]] = None,
-        headers: Optional[HTTPHeaders] = None,
+        path: str | None = None,
+        data: dict[str, Any] | None = None,
+        json_data: dict[str, Any] | None = None,
+        headers: HTTPHeaders | None = None,
     ) -> APIResponse:
         """
         Make a POST request.
@@ -122,10 +122,10 @@ class EndpointBase:
 
     async def _put(
         self,
-        path: Optional[str] = None,
-        data: Optional[Dict[str, Any]] = None,
-        json_data: Optional[Dict[str, Any]] = None,
-        headers: Optional[HTTPHeaders] = None,
+        path: str | None = None,
+        data: dict[str, Any] | None = None,
+        json_data: dict[str, Any] | None = None,
+        headers: HTTPHeaders | None = None,
     ) -> APIResponse:
         """
         Make a PUT request.
@@ -144,9 +144,9 @@ class EndpointBase:
 
     async def _delete(
         self,
-        path: Optional[str] = None,
-        params: Optional[QueryParams] = None,
-        headers: Optional[HTTPHeaders] = None,
+        path: str | None = None,
+        params: QueryParams | None = None,
+        headers: HTTPHeaders | None = None,
     ) -> APIResponse:
         """
         Make a DELETE request.
@@ -163,8 +163,8 @@ class EndpointBase:
         return await self._client.delete(url, params=params, headers=headers)
 
     def _prepare_params(
-        self, params_dict: Optional[Dict[str, Any]] = None, **kwargs: Any
-    ) -> Dict[str, Any]:
+        self, params_dict: dict[str, Any] | None = None, **kwargs: Any
+    ) -> dict[str, Any]:
         """
         Prepare parameters for API requests.
 
@@ -183,8 +183,8 @@ class EndpointBase:
         return result
 
     def _convert_response(
-        self, response: APIResponse, response_type: Optional[type] = None
-    ) -> Union[APIResponse, Any]:
+        self, response: APIResponse, response_type: type | None = None
+    ) -> APIResponse | Any:
         """
         Convert API response to the appropriate type.
 

@@ -6,30 +6,28 @@ and endpoint base classes.
 """
 
 import pytest
-from typing import Dict, Any
+
+from prmxctrl.base.endpoint_base import EndpointBase
 
 # Test imports
 from prmxctrl.base.exceptions import (
-    ProxmoxError,
-    ProxmoxAuthError,
     ProxmoxAPIError,
+    ProxmoxAuthError,
     ProxmoxConnectionError,
+    ProxmoxError,
     ProxmoxTimeoutError,
     ProxmoxValidationError,
 )
-
+from prmxctrl.base.http_client import HTTPClient
 from prmxctrl.base.types import (
+    APIResponse,
+    AuthToken,
+    JSONValue,
+    Password,
     ProxmoxNode,
     ProxmoxVMID,
-    APIResponse,
-    JSONValue,
     Username,
-    Password,
-    AuthToken,
 )
-
-from prmxctrl.base.http_client import HTTPClient
-from prmxctrl.base.endpoint_base import EndpointBase
 
 
 class TestExceptions:
@@ -176,7 +174,7 @@ class TestEndpointBase:
         endpoint = EndpointBase(client, "/test")
 
         assert endpoint._client == client
-        assert endpoint._base_path == "/test"
+        assert endpoint._path == "/test"
 
     def test_build_path_no_params(self):
         """Test path building without parameters."""
@@ -191,28 +189,30 @@ class TestEndpointBase:
         assert path == "/nodes"
 
     def test_build_path_with_params(self):
-        """Test path building with parameters."""
+        """Test path building with parameters using current API."""
 
         class MockClient:
             pass
 
         client = MockClient()
-        endpoint = EndpointBase(client, "/nodes/{node}/qemu/{vmid}")
+        # Test the current API: _build_path appends segments to base path
+        endpoint = EndpointBase(client, "/nodes")
 
-        path = endpoint._build_path(node="node1", vmid=100)
+        path = endpoint._build_path("node1", "qemu", "100")
         assert path == "/nodes/node1/qemu/100"
 
     def test_build_path_missing_params(self):
-        """Test path building fails with missing parameters."""
+        """Test path building with empty segments."""
 
         class MockClient:
             pass
 
         client = MockClient()
-        endpoint = EndpointBase(client, "/nodes/{node}/qemu/{vmid}")
+        endpoint = EndpointBase(client, "/nodes")
 
-        with pytest.raises(ValueError, match="Missing path parameters"):
-            endpoint._build_path(node="node1")  # missing vmid
+        # Test with empty segments (should just return base path)
+        path = endpoint._build_path()
+        assert path == "/nodes"
 
 
 if __name__ == "__main__":
@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
     # Test imports
     try:
-        from prmxctrl.base import exceptions, types, http_client, endpoint_base
+        from prmxctrl.base import endpoint_base, exceptions, http_client, types
 
         print("✓ All imports successful")
     except ImportError as e:
