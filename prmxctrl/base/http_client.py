@@ -267,10 +267,8 @@ class HTTPClient:
                 request_kwargs["content"] = data
 
         # Add CSRF token for non-GET requests if available
-        # if method.upper() != "GET" and self._csrf_token:
         if self._csrf_token:
-            # request_kwargs["headers"]["CSRFPreventionToken"] = self._csrf_token
-            self._client.headers["CSRFPreventionToken"] = self._csrf_token
+            request_kwargs["headers"]["CSRFPreventionToken"] = self._csrf_token
 
         last_exception: Exception | None = None
 
