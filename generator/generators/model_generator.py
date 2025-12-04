@@ -24,6 +24,9 @@ class ModelField:
     type_annotation: str
     field_kwargs: dict[str, str]
     description: str | None = None
+    original_name: str | None = (
+        None  # Original API parameter name (may differ from Python field name)
+    )
 
 
 @dataclass
@@ -316,14 +319,21 @@ validation across all API endpoints.
 
             # Add description to field_kwargs if present
             if param.description:
-                field_kwargs["description"] = repr(param.description)
+                field_kwargs["description"] = param.description
+
+            # Add serialization_alias if field name differs from original (e.g., hyphens to underscores)
+            sanitized_name = self._sanitize_field_name(param.name)
+            if sanitized_name != param.name:
+                # Add alias for serialization (when sending to API)
+                field_kwargs["serialization_alias"] = param.name
 
             # Create field
             field = ModelField(
-                name=self._sanitize_field_name(param.name),
+                name=sanitized_name,
                 type_annotation=type_annotation,
                 field_kwargs=field_kwargs,
                 description=param.description,
+                original_name=param.name if sanitized_name != param.name else None,
             )
             fields.append(field)
 
@@ -374,7 +384,7 @@ validation across all API endpoints.
         field = ModelField(
             name="data",
             type_annotation=type_annotation,
-            field_kwargs={"description": repr(f"Response data for {method_name.upper()}")},
+            field_kwargs={"description": f"Response data for {method_name.upper()}"},
         )
 
         model = PydanticModel(

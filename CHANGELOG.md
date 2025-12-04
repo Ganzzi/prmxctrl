@@ -4,6 +4,27 @@ All notable changes to prmxctrl will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [0.1.2] - 2025-12-04
+
+### Fixed
+- **Critical Serialization Bug**: Fixed parameter names with hyphens not being correctly serialized to the Proxmox API
+  - **Root Cause**: Parameters like `generate-password` were converted to `generate_password` for Python compatibility, but were not being converted back when sending to the API
+  - **Solution**: Added `serialization_alias` to Pydantic Field definitions for all fields where the Python name differs from the original API parameter name
+  - **Affected Endpoints**: All endpoints with hyphenated parameter names (e.g., vncproxy, spiceproxy, and others)
+
+### Changed
+- **Model Generation**: Code generator now automatically adds `serialization_alias` for fields with sanitized names
+- **Model Config**: Added `populate_by_name=True` to Pydantic model configs to support both original and sanitized names during deserialization
+- **Endpoint Generation**: Added `by_alias=True` to all `model_dump()` calls to ensure serialization uses original API parameter names
+
+### Technical Details
+- **Issue**: Proxmox API returned errors like `"generate_password": "property is not defined in schema"` because Python snake_case names were being sent instead of hyphenated original names
+- **Fix Locations**:
+  - `generator/generators/model_generator.py` - Added `serialization_alias` field generation
+  - `generator/generators/endpoint_generator.py` - Added `by_alias=True` to `model_dump()` calls
+  - `generator/templates/model.py.jinja` - Added `populate_by_name=True` to model config
+- **Verification**: Successfully tested vncproxy endpoint which previously failed with this bug
+
 ## [0.1.1] - 2025-10-29
 
 ### Fixed

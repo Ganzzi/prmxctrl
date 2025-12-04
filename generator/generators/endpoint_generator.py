@@ -526,17 +526,17 @@ DO NOT EDIT MANUALLY
         # Generate return statement
         if method_name == "GET":
             if param_model:
-                return_statement = "return await self._get(params=params.model_dump(exclude_none=True) if params else None)"
+                return_statement = "return await self._get(params=params.model_dump(exclude_none=True, by_alias=True) if params else None)"
             else:
                 return_statement = "return await self._get()"
         elif method_name == "POST":
             if param_model:
-                return_statement = "return await self._post(data=params.model_dump(exclude_none=True) if params else None)"
+                return_statement = "return await self._post(data=params.model_dump(exclude_none=True, by_alias=True) if params else None)"
             else:
                 return_statement = "return await self._post()"
         elif method_name == "PUT":
             if param_model:
-                return_statement = "return await self._put(data=params.model_dump(exclude_none=True) if params else None)"
+                return_statement = "return await self._put(data=params.model_dump(exclude_none=True, by_alias=True) if params else None)"
             else:
                 return_statement = "return await self._put()"
         elif method_name == "DELETE":
@@ -588,17 +588,17 @@ DO NOT EDIT MANUALLY
         # Generate return statement
         if method_name == "GET":
             if param_model:
-                return_statement = "return await self._get(params=params.model_dump(exclude_none=True) if params else None)"
+                return_statement = "return await self._get(params=params.model_dump(exclude_none=True, by_alias=True) if params else None)"
             else:
                 return_statement = "return await self._get()"
         elif method_name == "POST":
             if param_model:
-                return_statement = "return await self._post(data=params.model_dump(exclude_none=True) if params else None)"
+                return_statement = "return await self._post(data=params.model_dump(exclude_none=True, by_alias=True) if params else None)"
             else:
                 return_statement = "return await self._post()"
         elif method_name == "PUT":
             if param_model:
-                return_statement = "return await self._put(data=params.model_dump(exclude_none=True) if params else None)"
+                return_statement = "return await self._put(data=params.model_dump(exclude_none=True, by_alias=True) if params else None)"
             else:
                 return_statement = "return await self._put()"
         elif method_name == "DELETE":
