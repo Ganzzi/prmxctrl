@@ -256,11 +256,7 @@ for node in nodes:
 ### Setup
 
 ```bash
-git clone https://github.com/your-repo/prmxctrl.git
-cd prmxctrl
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -e .[dev]
+uv sync --all-groups --all-extras
 ```
 
 ### Code Generation
@@ -278,18 +274,12 @@ python tools/validate.py
 ### Testing
 
 ```bash
-# Run the full test suite
-pytest
-
-# Run with coverage
-pytest --cov=prmxctrl --cov-report=html
-
-# Type checking
-mypy --strict
-
-# Linting
-ruff check .
+uv run pytest -m "not integration and not e2e" -q   # PR gate (unit only)
+uv run pytest -q                                       # full local
+uv run pytest -m "not integration and not e2e" --cov --cov-report=term-missing  # coverage
 ```
+
+See [docs/development.md](docs/development.md) for the full development guide.
 
 ## Architecture
 

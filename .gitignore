@@ -136,6 +136,14 @@ dmypy.json
 *.swo
 *~
 
+# Type checking
+.ruff_cache/
+
+# Claude Code
+.claude/
+AGENTS.md
+CLAUDE.md
+
 # OS generated files
 .DS_Store
 .DS_Store?
@@ -160,3 +168,4 @@ schemas/*.json
 .coverage
 htmlcov/
 *.log
+.gitnexus

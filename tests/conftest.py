@@ -113,10 +113,16 @@ def pytest_configure(config):
 
 
 def pytest_collection_modifyitems(config, items):
-    """Modify test collection."""
-    # Add markers based on test location
+    """Tag tests so PR gating can exclude integration and e2e runs."""
     for item in items:
-        if "integration" in str(item.fspath):
+        path = str(item.fspath).replace("\\", "/")
+        stem = Path(path).stem
+
+        if "/tests/e2e/" in path or "e2e" in stem:
+            item.add_marker(pytest.mark.e2e)
+        elif "/tests/integration/" in path or "integration" in stem:
             item.add_marker(pytest.mark.integration)
-        if "generated" in str(item.fspath):
+        elif "/tests/generated/" in path or "generated" in stem:
             item.add_marker(pytest.mark.generated)
+        else:
+            item.add_marker(pytest.mark.unit)

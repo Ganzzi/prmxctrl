@@ -22,19 +22,20 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v4
+
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
+      run: uv sync --all-groups --all-extras
 
     - name: Generate SDK
-      run: python tools/generate.py --force
+      run: uv run python tools/generate.py --force
 
     - name: Run validation
-      run: python tools/validate.py
+      run: uv run python tools/validate.py
 
     - name: Run tests
-      run: pytest --cov=prmxctrl --cov-report=xml
+      run: uv run pytest -m "not integration and not e2e" -q --cov=prmxctrl --cov-report=xml
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -55,16 +56,17 @@ jobs:
       with:
         python-version: "3.11"
 
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v4
+
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
+      run: uv sync --all-groups --all-extras
 
     - name: Run ruff
-      run: ruff check .
+      run: uv run ruff check .
 
     - name: Run mypy
-      run: mypy prmxctrl/
+      run: uv run mypy prmxctrl/
 
     - name: Check formatting
-      run: black --check . && isort --check-only .
+      run: uv run black --check . && uv run isort --check-only .
