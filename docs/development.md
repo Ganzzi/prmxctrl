@@ -58,4 +58,4 @@ uv run ruff check .
 
 ## Known Issues
 
-See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for tracked issues.
+See [known-issues.md](known-issues.md) for tracked issues.

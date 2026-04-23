@@ -684,4 +684,4 @@ async def rate_limited_operation():
 
 ---
 
-**See Also**: [Examples](./06_EXAMPLES.md) | [Error Handling](./07_ERROR_HANDLING.md) | [Core Concepts](./03_CORE_CONCEPTS.md)
+**See Also**: [Examples](./06-examples.md) | [Error Handling](./07-error-handling.md) | [Core Concepts](./03-core-concepts.md)

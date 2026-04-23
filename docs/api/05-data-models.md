@@ -435,4 +435,4 @@ subset = status.model_dump(include={'node', 'uptime', 'cpu'})
 
 ---
 
-**See Also**: [Core Concepts](./03_CORE_CONCEPTS.md) | [API Reference](./04_API_REFERENCE.md) | [Examples](./06_EXAMPLES.md)
+**See Also**: [Core Concepts](./03-core-concepts.md) | [API Reference](./04-api-reference.md) | [Examples](./06-examples.md)

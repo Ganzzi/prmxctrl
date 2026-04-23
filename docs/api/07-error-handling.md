@@ -617,4 +617,4 @@ async with ProxmoxClient(
 
 ---
 
-**See Also**: [Getting Started](./01_GETTING_STARTED.md) | [API Reference](./04_API_REFERENCE.md) | [Examples](./06_EXAMPLES.md) | [Advanced Usage](./08_ADVANCED_USAGE.md)
+**See Also**: [Getting Started](./01-getting-started.md) | [API Reference](./04-api-reference.md) | [Examples](./06-examples.md) | [Advanced Usage](./08-advanced-usage.md)

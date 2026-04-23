@@ -320,11 +320,11 @@ async with ProxmoxClient(
 
 ## Next Steps
 
-- Read [Authentication](./02_AUTHENTICATION.md) for detailed auth options
-- Check [Core Concepts](./03_CORE_CONCEPTS.md) for SDK architecture
-- Review [API Reference](./04_API_REFERENCE.md) for endpoint details
-- See [Examples](./06_EXAMPLES.md) for real-world usage patterns
+- Read [Authentication](./02-authentication.md) for detailed auth options
+- Check [Core Concepts](./03-core-concepts.md) for SDK architecture
+- Review [API Reference](./04-api-reference.md) for endpoint details
+- See [Examples](./06-examples.md) for real-world usage patterns
 
 ---
 
-**See Also**: [README](./README.md) | [Authentication](./02_AUTHENTICATION.md) | [Error Handling](./07_ERROR_HANDLING.md)
+**See Also**: [README](./README.md) | [Authentication](./02-authentication.md) | [Error Handling](./07-error-handling.md)

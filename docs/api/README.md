@@ -6,14 +6,14 @@ Welcome to the comprehensive API documentation for the prmxctrl Python SDK. This
 
 ## Quick Navigation
 
-- **[Getting Started](./01_GETTING_STARTED.md)** - Installation and basic usage
-- **[Authentication](./02_AUTHENTICATION.md)** - Authentication methods and security best practices
-- **[Core Concepts](./03_CORE_CONCEPTS.md)** - Key concepts and patterns
-- **[API Reference](./04_API_REFERENCE.md)** - Detailed endpoint reference
-- **[Data Models](./05_DATA_MODELS.md)** - Request/response model documentation
-- **[Examples](./06_EXAMPLES.md)** - Practical usage examples
-- **[Error Handling](./07_ERROR_HANDLING.md)** - Exception handling and error recovery
-- **[Advanced Usage](./08_ADVANCED_USAGE.md)** - Advanced patterns and optimization
+- **[Getting Started](./01-getting-started.md)** - Installation and basic usage
+- **[Authentication](./02-authentication.md)** - Authentication methods and security best practices
+- **[Core Concepts](./03-core-concepts.md)** - Key concepts and patterns
+- **[API Reference](./04-api-reference.md)** - Detailed endpoint reference
+- **[Data Models](./05-data-models.md)** - Request/response model documentation
+- **[Examples](./06-examples.md)** - Practical usage examples
+- **[Error Handling](./07-error-handling.md)** - Exception handling and error recovery
+- **[Advanced Usage](./08-advanced-usage.md)** - Advanced patterns and optimization
 
 ## Documentation Overview
 
@@ -126,9 +126,9 @@ This documentation covers **Proxmox VE 7.4.2**. The SDK may be compatible with o
 
 ## Getting Help
 
-- Check the [Examples](./06_EXAMPLES.md) section for common usage patterns
-- Review [Error Handling](./07_ERROR_HANDLING.md) for troubleshooting
-- Check [Advanced Usage](./08_ADVANCED_USAGE.md) for optimization tips
+- Check the [Examples](./06-examples.md) section for common usage patterns
+- Review [Error Handling](./07-error-handling.md) for troubleshooting
+- Check [Advanced Usage](./08-advanced-usage.md) for optimization tips
 - Refer to the [Proxmox API Documentation](https://pve.proxmox.com/wiki/Proxmox_VE_API2) for official endpoint documentation
 
 ## SDK Repository

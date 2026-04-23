@@ -10,47 +10,47 @@ Comprehensive API documentation for the **prmxctrl Proxmox VE 7.4.2 Python SDK**
 
 ### 🏠 Main Hub
 - **README.md** - Documentation overview and navigation
-- **INDEX.md** - Complete index, learning paths, and quick reference
+- **index.md** - Complete index, learning paths, and quick reference
 
 ### 🚀 Getting Started (Beginner Level)
-- **01_GETTING_STARTED.md** (25KB)
+- **01-getting-started.md** (25KB)
   - Installation, setup, first API call
   - Client initialization patterns
   - Troubleshooting guide
 
-- **02_AUTHENTICATION.md** (22KB)
+- **02-authentication.md** (22KB)
   - Password and token authentication
   - Creating API tokens step-by-step
   - Security best practices
 
 ### 📖 Core Knowledge (Intermediate Level)
-- **03_CORE_CONCEPTS.md** (20KB)
+- **03-core-concepts.md** (20KB)
   - SDK architecture and layers
   - Hierarchical endpoints
   - Type safety and async patterns
 
-- **04_API_REFERENCE.md** (28KB)
+- **04-api-reference.md** (28KB)
   - All 284 endpoints documented
   - 6 API categories covered
   - Usage examples for each
 
-- **05_DATA_MODELS.md** (18KB)
+- **05-data-models.md** (18KB)
   - Pydantic v2 models reference
   - Type hints and validation
   - Model categories
 
 ### 💡 Applied Knowledge (Examples & Advanced)
-- **06_EXAMPLES.md** (35KB)
+- **06-examples.md** (35KB)
   - 100+ code examples
   - Cluster, node, VM, container operations
   - User management, monitoring, advanced ops
 
-- **07_ERROR_HANDLING.md** (24KB)
+- **07-error-handling.md** (24KB)
   - Exception types and handling
   - Retry patterns and timeouts
   - Common error scenarios
 
-- **08_ADVANCED_USAGE.md** (28KB)
+- **08-advanced-usage.md** (28KB)
   - Connection pooling and async patterns
   - Performance optimization
   - Production deployment patterns
@@ -142,24 +142,24 @@ Comprehensive API documentation for the **prmxctrl Proxmox VE 7.4.2 Python SDK**
 ### For First-Time Users (30 minutes)
 ```
 1. Read: README.md (overview)
-2. Read: 01_GETTING_STARTED.md (setup)
-3. Read: 02_AUTHENTICATION.md (auth)
-4. Try: Examples from 06_EXAMPLES.md
+2. Read: 01-getting-started.md (setup)
+3. Read: 02-authentication.md (auth)
+4. Try: Examples from 06-examples.md
 ```
 
 ### For API Implementation (2 hours)
 ```
-1. Reference: 04_API_REFERENCE.md (endpoints)
-2. Check: 05_DATA_MODELS.md (data structures)
-3. Copy: Examples from 06_EXAMPLES.md
-4. Handle: 07_ERROR_HANDLING.md (errors)
+1. Reference: 04-api-reference.md (endpoints)
+2. Check: 05-data-models.md (data structures)
+3. Copy: Examples from 06-examples.md
+4. Handle: 07-error-handling.md (errors)
 ```
 
 ### For Production Deployment (2+ hours)
 ```
-1. Study: 08_ADVANCED_USAGE.md (patterns)
-2. Implement: 07_ERROR_HANDLING.md (resilience)
-3. Optimize: Performance tips from 08_ADVANCED_USAGE.md
+1. Study: 08-advanced-usage.md (patterns)
+2. Implement: 07-error-handling.md (resilience)
+3. Optimize: Performance tips from 08-advanced-usage.md
 4. Monitor: Health checks and logging patterns
 ```
 
@@ -170,19 +170,19 @@ Comprehensive API documentation for the **prmxctrl Proxmox VE 7.4.2 Python SDK**
 ```
 docs/api/
 ├── README.md                    ← Start here
-├── INDEX.md                     ← Complete navigation guide
+├── index.md                     ← Complete navigation guide
 ├── DOCUMENTATION_SUMMARY.md     ← Statistics & overview
 │
-├── 01_GETTING_STARTED.md        ← Installation & setup
-├── 02_AUTHENTICATION.md         ← Auth methods & tokens
+├── 01-getting-started.md        ← Installation & setup
+├── 02-authentication.md         ← Auth methods & tokens
 │
-├── 03_CORE_CONCEPTS.md          ← Architecture & patterns
-├── 04_API_REFERENCE.md          ← All 284 endpoints
-├── 05_DATA_MODELS.md            ← Data structures
+├── 03-core-concepts.md          ← Architecture & patterns
+├── 04-api-reference.md          ← All 284 endpoints
+├── 05-data-models.md            ← Data structures
 │
-├── 06_EXAMPLES.md               ← 100+ code examples
-├── 07_ERROR_HANDLING.md         ← Exception handling
-└── 08_ADVANCED_USAGE.md         ← Production patterns
+├── 06-examples.md               ← 100+ code examples
+├── 07-error-handling.md         ← Exception handling
+└── 08-advanced-usage.md         ← Production patterns
 ```
 
 ---
@@ -222,14 +222,14 @@ docs/api/
 
 | What You Want To Do | Documentation |
 |-------|-------|
-| Get started quickly | [01_GETTING_STARTED.md](./01_GETTING_STARTED.md) |
-| Set up authentication | [02_AUTHENTICATION.md](./02_AUTHENTICATION.md) |
-| List all VMs | [06_EXAMPLES.md](./06_EXAMPLES.md#list-vms-on-a-node) |
-| Create a VM | [06_EXAMPLES.md](./06_EXAMPLES.md#create-a-new-vm) |
-| Handle errors | [07_ERROR_HANDLING.md](./07_ERROR_HANDLING.md) |
-| Optimize performance | [08_ADVANCED_USAGE.md](./08_ADVANCED_USAGE.md#performance-optimization) |
-| Use type checking | [08_ADVANCED_USAGE.md](./08_ADVANCED_USAGE.md#type-safety-and-mypy) |
-| Deploy to production | [08_ADVANCED_USAGE.md](./08_ADVANCED_USAGE.md#production-deployment) |
+| Get started quickly | [01-getting-started.md](./01-getting-started.md) |
+| Set up authentication | [02-authentication.md](./02-authentication.md) |
+| List all VMs | [06-examples.md](./06-examples.md#list-vms-on-a-node) |
+| Create a VM | [06-examples.md](./06-examples.md#create-a-new-vm) |
+| Handle errors | [07-error-handling.md](./07-error-handling.md) |
+| Optimize performance | [08-advanced-usage.md](./08-advanced-usage.md#performance-optimization) |
+| Use type checking | [08-advanced-usage.md](./08-advanced-usage.md#type-safety-and-mypy) |
+| Deploy to production | [08-advanced-usage.md](./08-advanced-usage.md#production-deployment) |
 
 ---
 
@@ -286,15 +286,15 @@ After reading this documentation, you will understand:
 ### To Use This Documentation
 
 1. **Start Reading**: Begin with `README.md`
-2. **Get Setup**: Follow `01_GETTING_STARTED.md`
-3. **Authenticate**: Complete `02_AUTHENTICATION.md`
-4. **Try Examples**: Copy from `06_EXAMPLES.md`
-5. **Reference**: Use `04_API_REFERENCE.md` as needed
+2. **Get Setup**: Follow `01-getting-started.md`
+3. **Authenticate**: Complete `02-authentication.md`
+4. **Try Examples**: Copy from `06-examples.md`
+5. **Reference**: Use `04-api-reference.md` as needed
 
 ### To Deploy the Documentation
 
 1. **Copy all files** from `/docs/api/` to your documentation site
-2. **Configure navigation** using `INDEX.md` as structure
+2. **Configure navigation** using `index.md` as structure
 3. **Serve online** for team access
 4. **Update** when SDK is updated
 
@@ -310,37 +310,37 @@ After reading this documentation, you will understand:
 ## ✨ Documentation Highlights
 
 ### Best Explanations
-- [Hierarchical Endpoints](./03_CORE_CONCEPTS.md#hierarchical-endpoints) - Clear structure
-- [Type Safety](./03_CORE_CONCEPTS.md#type-safety-with-pydantic) - Practical examples
-- [Error Handling](./07_ERROR_HANDLING.md#exception-hierarchy) - Comprehensive patterns
-- [Async Patterns](./08_ADVANCED_USAGE.md#async-patterns) - Well-illustrated
+- [Hierarchical Endpoints](./03-core-concepts.md#hierarchical-endpoints) - Clear structure
+- [Type Safety](./03-core-concepts.md#type-safety-with-pydantic) - Practical examples
+- [Error Handling](./07-error-handling.md#exception-hierarchy) - Comprehensive patterns
+- [Async Patterns](./08-advanced-usage.md#async-patterns) - Well-illustrated
 
 ### Best Examples
-- [VM Operations](./06_EXAMPLES.md#virtual-machine-operations) - Complete lifecycle
-- [Error Handling](./07_ERROR_HANDLING.md#retry-patterns) - Production patterns
-- [Performance](./08_ADVANCED_USAGE.md#performance-optimization) - Real patterns
-- [Advanced Async](./08_ADVANCED_USAGE.md#producer-consumer-pattern) - Complex patterns
+- [VM Operations](./06-examples.md#virtual-machine-operations) - Complete lifecycle
+- [Error Handling](./07-error-handling.md#retry-patterns) - Production patterns
+- [Performance](./08-advanced-usage.md#performance-optimization) - Real patterns
+- [Advanced Async](./08-advanced-usage.md#producer-consumer-pattern) - Complex patterns
 
 ### Best Reference Material
-- [API Reference](./04_API_REFERENCE.md) - All endpoints
-- [Data Models](./05_DATA_MODELS.md) - All data types
-- [INDEX.md](./INDEX.md) - Navigation guide
-- [Examples](./06_EXAMPLES.md) - Code samples
+- [API Reference](./04-api-reference.md) - All endpoints
+- [Data Models](./05-data-models.md) - All data types
+- [index.md](./index.md) - Navigation guide
+- [Examples](./06-examples.md) - Code samples
 
 ---
 
 ## 📞 Support
 
 ### For Questions, Check:
-1. **INDEX.md** - Quick navigation guide
-2. **06_EXAMPLES.md** - Similar examples
-3. **07_ERROR_HANDLING.md** - Error solutions
-4. **04_API_REFERENCE.md** - Endpoint details
+1. **index.md** - Quick navigation guide
+2. **06-examples.md** - Similar examples
+3. **07-error-handling.md** - Error solutions
+4. **04-api-reference.md** - Endpoint details
 
 ### For Issues:
-1. Check **01_GETTING_STARTED.md#troubleshooting**
-2. Review **07_ERROR_HANDLING.md**
-3. Check **02_AUTHENTICATION.md#troubleshooting-authentication**
+1. Check **01-getting-started.md#troubleshooting**
+2. Review **07-error-handling.md**
+3. Check **02-authentication.md#troubleshooting-authentication**
 
 ---
 
@@ -367,9 +367,9 @@ After reading this documentation, you will understand:
 
 Quick Links:
 - [📖 README](./README.md) - Start here
-- [📑 INDEX](./INDEX.md) - Navigation guide
-- [🚀 Getting Started](./01_GETTING_STARTED.md) - Installation
-- [🔐 Authentication](./02_AUTHENTICATION.md) - Auth setup
-- [💻 Examples](./06_EXAMPLES.md) - Code samples
-- [🐛 Error Handling](./07_ERROR_HANDLING.md) - Error handling
-- [⚙️ Advanced](./08_ADVANCED_USAGE.md) - Production patterns
+- [📑 INDEX](./index.md) - Navigation guide
+- [🚀 Getting Started](./01-getting-started.md) - Installation
+- [🔐 Authentication](./02-authentication.md) - Auth setup
+- [💻 Examples](./06-examples.md) - Code samples
+- [🐛 Error Handling](./07-error-handling.md) - Error handling
+- [⚙️ Advanced](./08-advanced-usage.md) - Production patterns

@@ -502,4 +502,4 @@ status = await client.nodes("pve1").status.get()
 
 ---
 
-**See Also**: [Getting Started](./01_GETTING_STARTED.md) | [API Reference](./04_API_REFERENCE.md) | [Data Models](./05_DATA_MODELS.md)
+**See Also**: [Getting Started](./01-getting-started.md) | [API Reference](./04-api-reference.md) | [Data Models](./05-data-models.md)

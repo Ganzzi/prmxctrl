@@ -477,7 +477,7 @@ The API returns standard HTTP status codes:
 | 404 | Not Found - Resource doesn't exist |
 | 500 | Server Error - API error |
 
-See [Error Handling](./07_ERROR_HANDLING.md) for exception handling.
+See [Error Handling](./07-error-handling.md) for exception handling.
 
 ---
 
@@ -512,4 +512,4 @@ task = await client.nodes("pve1").qemu.create(...)
 
 ---
 
-**See Also**: [Core Concepts](./03_CORE_CONCEPTS.md) | [Data Models](./05_DATA_MODELS.md) | [Examples](./06_EXAMPLES.md) | [Error Handling](./07_ERROR_HANDLING.md)
+**See Also**: [Core Concepts](./03-core-concepts.md) | [Data Models](./05-data-models.md) | [Examples](./06-examples.md) | [Error Handling](./07-error-handling.md)

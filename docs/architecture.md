@@ -244,7 +244,7 @@ docs/                    # Documentation
 ├── plan/
 │   ├── v1.md           # Original plan
 │   └── v1_checklist.md # Implementation checklist
-└── SCHEMA_ANALYSIS.md   # Schema analysis results
+└── schema-analysis.md   # Schema analysis results
 ```
 
 ## Performance Considerations

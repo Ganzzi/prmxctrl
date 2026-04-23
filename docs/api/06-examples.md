@@ -668,4 +668,4 @@ asyncio.run(safe_cluster_operation())
 
 ---
 
-**See Also**: [API Reference](./04_API_REFERENCE.md) | [Data Models](./05_DATA_MODELS.md) | [Error Handling](./07_ERROR_HANDLING.md) | [Advanced Usage](./08_ADVANCED_USAGE.md)
+**See Also**: [API Reference](./04-api-reference.md) | [Data Models](./05-data-models.md) | [Error Handling](./07-error-handling.md) | [Advanced Usage](./08-advanced-usage.md)

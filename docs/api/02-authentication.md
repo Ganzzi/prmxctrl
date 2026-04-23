@@ -354,4 +354,4 @@ if __name__ == "__main__":
 
 ---
 
-**See Also**: [Getting Started](./01_GETTING_STARTED.md) | [Error Handling](./07_ERROR_HANDLING.md) | [Advanced Usage](./08_ADVANCED_USAGE.md)
+**See Also**: [Getting Started](./01-getting-started.md) | [Error Handling](./07-error-handling.md) | [Advanced Usage](./08-advanced-usage.md)
