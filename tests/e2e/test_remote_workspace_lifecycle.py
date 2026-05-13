@@ -73,44 +73,34 @@ class TestRemoteWorkspaceLifecycleReal:
         from prmxctrl import ProxmoxClient
 
         client = ProxmoxClient(
-            api_url=infra_config["proxmox_api_url"],
-            api_token=infra_config["proxmox_api_token"],
+            host=infra_config["proxmox_api_url"],
+            user=os.getenv("PROXMOX_USER", "root@pam"),
+            token_name=os.getenv("PROXMOX_TOKEN_NAME", ""),
+            token_value=infra_config["proxmox_api_token"],
         )
 
-        # Clone from template
-        vm_id = await client.clone_vm(
-            node=infra_config["proxmox_node"],
-            template_id=int(infra_config["proxmox_vm_template"]),
-            new_vm_id=9999,
-            name="test-e2e-vm",
-            storage=infra_config["proxmox_storage"],
+        # Clone from template using raw endpoint
+        clone_result = await client.nodes(infra_config["proxmox_node"]).qemu(int(infra_config["proxmox_vm_template"])).clone.clone(
+            params={
+                "newid": 9999,
+                "name": "test-e2e-vm",
+                "storage": infra_config["proxmox_storage"],
+            }
         )
 
-        assert vm_id is not None
+        assert clone_result is not None
 
-        # Start the VM
-        await client.start_vm(
-            node=infra_config["proxmox_node"],
-            vm_id=vm_id,
-        )
+        # Start the VM using raw endpoint
+        await client.nodes(infra_config["proxmox_node"]).qemu(9999).status.start.vm_start()
 
-        # Verify VM is running
-        status = await client.get_vm_status(
-            node=infra_config["proxmox_node"],
-            vm_id=vm_id,
-        )
+        # Verify VM is running using raw endpoint
+        status = await client.nodes(infra_config["proxmox_node"]).qemu(9999).status.current.get()
 
         assert status["status"] == "running"
 
-        # Cleanup: stop and delete VM
-        await client.stop_vm(
-            node=infra_config["proxmox_node"],
-            vm_id=vm_id,
-        )
-        await client.delete_vm(
-            node=infra_config["proxmox_node"],
-            vm_id=vm_id,
-        )
+        # Cleanup: stop and delete VM using raw endpoints
+        await client.nodes(infra_config["proxmox_node"]).qemu(9999).status.stop.vm_stop()
+        await client.nodes(infra_config["proxmox_node"]).qemu(9999).delete()
 
 
 # ---------------------------------------------------------------------------
@@ -133,8 +123,10 @@ class TestRemoteWorkspaceLifecycleMocked:
             mock_instance.get_vm_status.return_value = {"status": "running"}
 
             client = MockClient(
-                api_url="https://mock-proxmox:8006",
-                api_token="mock-token",
+                host="https://mock-proxmox:8006",
+                user="root@pam",
+                token_name="mock-token",
+                token_value="mock-token-value",
             )
 
             vm_id = await client.clone_vm(
